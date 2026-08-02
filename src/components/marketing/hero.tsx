@@ -1,0 +1,122 @@
+import Link from "next/link";
+import { ArrowRight, MessageSquareText, ShieldCheck, Video } from "lucide-react";
+
+import { ListenerAvatar } from "@/components/brand/listener-avatar";
+import { HeroVisual } from "@/components/marketing/hero-visual";
+import { AuroraBackdrop } from "@/components/motion/aurora-backdrop";
+import { Reveal, Stagger, RevealItem } from "@/components/motion/reveal";
+import { Rating } from "@/components/shared/rating";
+import { Button } from "@/components/ui/button";
+import { featuredListeners } from "@/lib/data/listeners";
+import { trustPoints } from "@/lib/data/marketing";
+
+export function Hero() {
+  return (
+    <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 lg:pt-44 lg:pb-28">
+      <AuroraBackdrop intensity="default" className="mask-fade-b" />
+      <div
+        aria-hidden
+        className="bg-grid mask-fade-b pointer-events-none absolute inset-0 opacity-50"
+      />
+
+      <div className="container-page relative">
+        <Stagger className="mx-auto flex max-w-3xl flex-col items-center text-center">
+          <RevealItem>
+            <Link
+              href="/chat"
+              className="glass group mb-8 inline-flex items-center gap-2.5 rounded-full py-1.5 pr-4 pl-1.5 text-xs font-medium"
+            >
+              <span className="bg-primary text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem]">
+                <span className="bg-primary-foreground size-1.5 rounded-full" />
+                Online now
+              </span>
+              <span className="text-muted-foreground">
+                Chat with a real person — no appointment
+              </span>
+              <ArrowRight className="text-muted-foreground size-3 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </RevealItem>
+
+          <RevealItem>
+            <h1 className="text-[2.5rem] leading-[1.05] font-semibold tracking-[-0.035em] sm:text-6xl lg:text-[4.25rem]">
+              Everyone deserves someone who{" "}
+              <span className="text-gradient font-display text-[1.08em] italic">
+                truly listens
+              </span>
+              .
+            </h1>
+          </RevealItem>
+
+          <RevealItem>
+            <p className="text-muted-foreground mx-auto mt-7 max-w-2xl text-base leading-relaxed sm:text-lg">
+              Whether it&rsquo;s your next startup, a difficult decision, or simply
+              something on your mind — talk to a real person who listens without
+              judgment. Start a chat right now, or ask us for a voice or
+              face-to-face conversation.
+            </p>
+          </RevealItem>
+
+          <RevealItem className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <Button asChild size="xl" variant="gradient" className="w-full sm:w-auto">
+              <Link href="/chat">
+                <MessageSquareText className="size-4" />
+                Start a chat now
+              </Link>
+            </Button>
+            <Button asChild size="xl" variant="outline" className="w-full sm:w-auto">
+              <Link href="/book?mode=meet-video">
+                <Video className="size-4" />
+                Request a Google Meet session
+              </Link>
+            </Button>
+          </RevealItem>
+
+          <RevealItem className="mt-9 flex flex-col items-center gap-5 sm:flex-row sm:gap-7">
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-2.5">
+                {featuredListeners.slice(0, 4).map((listener) => (
+                  <ListenerAvatar
+                    key={listener.id}
+                    name={listener.name}
+                    size="sm"
+                    ring
+                  />
+                ))}
+              </div>
+              <div className="text-left">
+                <Rating value={4.9} />
+                <p className="text-muted-foreground text-xs">
+                  our whole team, all in-house
+                </p>
+              </div>
+            </div>
+
+            <ul className="text-muted-foreground flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
+              {trustPoints.slice(0, 3).map((point) => (
+                <li key={point} className="flex items-center gap-1.5">
+                  <ShieldCheck className="text-success size-3.5" />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </RevealItem>
+        </Stagger>
+
+        <div className="mt-16 sm:mt-20">
+          <HeroVisual />
+        </div>
+
+        <Reveal delay={0.2} className="mt-14 text-center">
+          <p className="text-muted-foreground mx-auto max-w-2xl text-xs leading-relaxed">
+            HearMeOut is a human connection service — not therapy, counseling, or
+            mental health treatment.{" "}
+            <Link href="/about#safety" className="hover:text-foreground underline underline-offset-4">
+              Read what that means
+            </Link>
+            .
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  );
+}

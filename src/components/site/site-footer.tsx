@@ -1,0 +1,106 @@
+import Link from "next/link";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+
+import { Logo } from "@/components/brand/logo";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { disclaimer, footerNav, site } from "@/lib/data/site";
+
+export function SiteFooter() {
+  return (
+    <footer className="border-border/70 relative border-t">
+      <div className="container-page py-16 lg:py-20">
+        <div className="grid gap-12 lg:grid-cols-[1.15fr_2fr]">
+          <div className="flex flex-col gap-6">
+            <Logo />
+            <p className="text-muted-foreground max-w-sm text-sm leading-relaxed">
+              A premium human connection platform. Real listeners, real
+              conversations, over text, voice, or face to face.
+            </p>
+
+            <form className="flex max-w-sm gap-2" aria-label="Newsletter signup">
+              <Input
+                type="email"
+                required
+                placeholder="you@example.com"
+                aria-label="Email address"
+                className="h-10"
+              />
+              <Button type="submit" size="sm" className="h-10 shrink-0">
+                Subscribe
+              </Button>
+            </form>
+            <p className="text-muted-foreground text-xs">
+              Occasional notes on listening well. No spam, unsubscribe anytime.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+            {footerNav.map((group) => (
+              <div key={group.title}>
+                <h3 className="mb-4 text-sm font-semibold">{group.title}</h3>
+                <ul className="flex flex-col gap-3">
+                  {group.items.map((item) => (
+                    <li key={item.label}>
+                      <Link
+                        href={item.href}
+                        className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <Separator className="my-10" />
+
+        {/* The line that has to be unmissable on every page */}
+        <div className="bg-muted/45 border-border/60 flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-start sm:gap-4">
+          <ShieldCheck className="text-primary mt-0.5 size-5 shrink-0" />
+          <p className="text-muted-foreground text-xs leading-relaxed">
+            <span className="text-foreground font-medium">
+              Important:{" "}
+            </span>
+            {disclaimer}
+          </p>
+        </div>
+
+        <div className="mt-10 flex flex-col-reverse items-start justify-between gap-6 sm:flex-row sm:items-center">
+          <p className="text-muted-foreground text-xs">
+            © {new Date().getFullYear()} {site.name}. All rights reserved.
+          </p>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <Link
+              href="/privacy"
+              className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+            >
+              Terms
+            </Link>
+            <Link
+              href="/about#safety"
+              className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+            >
+              Safety
+            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/chat">
+                Start a chat <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
