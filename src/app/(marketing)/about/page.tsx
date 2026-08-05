@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { CtaSection } from "@/components/marketing/cta-section";
+import { Founders } from "@/components/marketing/founders";
 import { NotTherapy } from "@/components/marketing/not-therapy";
 import { PageHero } from "@/components/marketing/page-hero";
 import { Reveal, Stagger, RevealItem } from "@/components/motion/reveal";
@@ -201,6 +202,8 @@ export default function AboutPage() {
           </Reveal>
         </div>
       </Section>
+
+      <Founders />
 
       <NotTherapy />
 

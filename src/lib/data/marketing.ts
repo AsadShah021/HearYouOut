@@ -91,6 +91,24 @@ export const faqs: Faq[] = [
     category: "sessions",
   },
   {
+    question: "Will you tell me what you actually think?",
+    answer:
+      "Only if you ask. Our default is listening without advising — most people arrive with plenty of opinions already and nowhere to think. But on some conversations, like creative work or planning an exit, you can switch on feedback mode when you send your request. Your listener will then hear you out in full first, and give you their honest opinion at the end rather than steering you throughout. You can turn it off again any time.",
+    category: "sessions",
+  },
+  {
+    question: "Can I talk about something without giving my name?",
+    answer:
+      "Yes, on our more personal conversations — regret and guilt, loneliness, comparison. Tick 'keep this anonymous' when you request one and your name is hidden from everyone except the listener taking your session. It never appears in our queue, our notes, or anything we report on. We still need an email address to send you the confirmed time, and you're welcome to use one that isn't tied to your real name.",
+    category: "privacy",
+  },
+  {
+    question: "What is a standing check-in?",
+    answer:
+      "A recurring 15-minute call with the same listener, at the same time each week or fortnight. You say what you meant to do, what actually happened, and what's next. There is no lecture when you miss a week — the point isn't pressure, it's that someone is expecting you and remembers what you said last time. Request it like any other session and tell us which cadence you want.",
+    category: "sessions",
+  },
+  {
     question: "Are conversations confidential?",
     answer:
       "Yes. Chats are encrypted in transit and at rest, and only you and the listener replying can read them. We never sell data, never train models on your conversations, and never share anything with employers, insurers, or advertisers. Live sessions are not recorded. Notes are written only if you ask for them, and you can delete any note — or your whole account and history — at any time.",

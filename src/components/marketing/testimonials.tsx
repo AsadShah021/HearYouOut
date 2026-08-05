@@ -14,7 +14,7 @@ function TestimonialCard({ item }: { item: Testimonial }) {
         {item.quote}
       </blockquote>
       <figcaption className="border-border/60 mt-auto flex items-center gap-3 border-t pt-5">
-        <ListenerAvatar name={item.name} size="sm" />
+        <ListenerAvatar name={item.name} src={item.avatar} size="sm" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{item.name}</p>
           <p className="text-muted-foreground truncate text-xs">{item.role}</p>

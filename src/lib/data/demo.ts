@@ -371,6 +371,13 @@ export const availability: AvailabilityDay[] = [
   { day: "Sunday", enabled: false, slots: [] },
 ];
 
+/** The member's recurring 15-minute accountability slot. */
+export const standingCheckin = {
+  listenerId: "l-mei",
+  nextAt: at(3, "08:30"),
+  weeksHeld: 11,
+};
+
 /** Incoming meeting requests waiting on us to confirm a time. */
 export const meetingRequests: MeetingRequest[] = [
   {
@@ -422,6 +429,75 @@ export const meetingRequests: MeetingRequest[] = [
     submittedAt: at(-1, "21:08"),
     status: "reviewing",
     isReturning: true,
+  },
+  {
+    id: "mr-5",
+    reference: "HMO-8239",
+    name: "Withheld",
+    email: "j.***@example.com",
+    timezone: "EDT (UTC−4)",
+    mode: "voice",
+    topic: "Regret & Guilt",
+    context:
+      "There's something I did about nine years ago that I've never told anyone. I don't want advice and I don't want to be told it's fine. I'd just like one person to know.",
+    preferredDates: [day(2), day(3)],
+    preferredWindows: ["late"],
+    urgency: "flexible",
+    submittedAt: at(0, "02:14"),
+    status: "new",
+    anonymous: true,
+  },
+  {
+    id: "mr-8",
+    reference: "HMO-8243",
+    name: "Withheld",
+    email: "n.***@example.com",
+    timezone: "AEST (UTC+10)",
+    mode: "voice",
+    topic: "Harassment",
+    context:
+      "It's been going on at work for about seven months. I've read your page and I understand you can't do anything official — I've already been through that and it went nowhere. I would just like to tell someone the whole thing once.",
+    preferredDates: [day(1), day(3)],
+    preferredWindows: ["evening"],
+    urgency: "this-week",
+    submittedAt: at(0, "05:36"),
+    status: "new",
+    anonymous: true,
+  },
+  {
+    id: "mr-6",
+    reference: "HMO-8238",
+    name: "Elena Vasquez",
+    email: "elena.v@example.com",
+    timezone: "PDT (UTC−7)",
+    mode: "voice",
+    topic: "Accountability Check-ins",
+    context:
+      "Trying to finish a manuscript. I need someone expecting me on Monday mornings — that's genuinely the whole ask.",
+    preferredDates: [day(4)],
+    preferredWindows: ["early", "morning"],
+    urgency: "flexible",
+    preferredListenerId: "l-mei",
+    submittedAt: at(-1, "16:45"),
+    status: "reviewing",
+    cadence: "weekly",
+  },
+  {
+    id: "mr-7",
+    reference: "HMO-8236",
+    name: "Owen Bradley",
+    email: "owen.b@example.com",
+    timezone: "BST (UTC+1)",
+    mode: "meet-video",
+    topic: "Creative Writing Feedback",
+    context:
+      "First three chapters of a novel. I'd like to read them aloud and then hear what someone honestly thinks — I've asked for feedback mode on purpose.",
+    preferredDates: [day(5), day(6)],
+    preferredWindows: ["afternoon"],
+    urgency: "flexible",
+    submittedAt: at(-1, "10:22"),
+    status: "new",
+    feedbackMode: true,
   },
   {
     id: "mr-4",

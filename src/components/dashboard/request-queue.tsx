@@ -8,10 +8,15 @@ import {
   Check,
   Clock3,
   Loader2,
+  EyeOff,
+  LifeBuoy,
   Mail,
+  MessageSquareQuote,
   MessageSquareText,
+  Repeat,
   Phone,
   Send,
+  ShieldAlert,
   User,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -39,6 +44,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { meetingRequests as seed } from "@/lib/data/demo";
 import { listeners, listenerMap } from "@/lib/data/listeners";
+import { serviceByTitle } from "@/lib/data/services";
 import { easeOutExpo } from "@/lib/motion";
 import {
   cn,
@@ -126,9 +132,12 @@ export function RequestQueue() {
     );
     setSaving(false);
     setScheduling(null);
-    toast.success(`Confirmed with ${scheduling.name}`, {
-      description: "Calendar invitation and Google Meet link sent to both of you.",
-    });
+    toast.success(
+      `Confirmed with ${scheduling.anonymous ? "anonymous member" : scheduling.name}`,
+      {
+        description: "Calendar invitation and Google Meet link sent to both of you.",
+      },
+    );
   }
 
   function markReviewing(id: string) {
@@ -178,6 +187,9 @@ export function RequestQueue() {
             const preferred = request.preferredListenerId
               ? listenerMap[request.preferredListenerId]
               : undefined;
+            // Topics where listening alone may not be enough — the listener
+            // needs to know before they open the session, not during it.
+            const needsReferralCheck = serviceByTitle[request.topic]?.escalation;
 
             return (
               <motion.article
@@ -194,11 +206,16 @@ export function RequestQueue() {
                 )}
               >
                 <div className="flex flex-wrap items-start gap-4">
-                  <ListenerAvatar name={request.name} size="md" />
+                  <ListenerAvatar
+                    name={request.anonymous ? "Anonymous" : request.name}
+                    size="md"
+                  />
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold">{request.name}</p>
+                      <p className="text-sm font-semibold">
+                        {request.anonymous ? "Anonymous member" : request.name}
+                      </p>
                       <ModeBadge mode={request.mode} />
                       <Badge variant={statusTone[request.status]}>
                         {request.status === "new" ? "New" : request.status === "reviewing" ? "Reviewing" : "Scheduled"}
@@ -207,6 +224,27 @@ export function RequestQueue() {
                         {urgencyLabel[request.urgency]}
                       </Badge>
                       {request.isReturning && <Badge variant="muted">Returning</Badge>}
+                      {request.cadence && (
+                        <Badge variant="brand">
+                          <Repeat className="size-3" />
+                          {request.cadence === "weekly" ? "Weekly" : "Fortnightly"}
+                        </Badge>
+                      )}
+                      {request.feedbackMode && (
+                        <Badge variant="info">
+                          <MessageSquareQuote className="size-3" /> Wants feedback
+                        </Badge>
+                      )}
+                      {request.anonymous && (
+                        <Badge variant="warning">
+                          <EyeOff className="size-3" /> Anonymous
+                        </Badge>
+                      )}
+                      {needsReferralCheck && (
+                        <Badge variant="destructive">
+                          <ShieldAlert className="size-3" /> Referral check
+                        </Badge>
+                      )}
                     </div>
 
                     <p className="text-muted-foreground mt-1.5 text-xs">
@@ -301,6 +339,20 @@ export function RequestQueue() {
                         <Button variant="outline" size="sm">
                           <MessageSquareText className="size-3.5" /> Reply
                         </Button>
+                        {needsReferralCheck && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              toast.info("Specialist referral list opened", {
+                                description:
+                                  "Send the organisations for their region alongside the confirmation.",
+                              })
+                            }
+                          >
+                            <LifeBuoy className="size-3.5" /> Refer
+                          </Button>
+                        )}
                       </>
                     ) : (
                       <Button variant="outline" size="sm" disabled>
@@ -333,7 +385,7 @@ export function RequestQueue() {
             <DialogTitle>Confirm a time</DialogTitle>
             <DialogDescription>
               {scheduling &&
-                `${scheduling.name} offered ${scheduling.preferredDates.length} ${scheduling.preferredDates.length === 1 ? "day" : "days"} in ${scheduling.timezone}.`}
+                `${scheduling.anonymous ? "This member" : scheduling.name} offered ${scheduling.preferredDates.length} ${scheduling.preferredDates.length === 1 ? "day" : "days"} in ${scheduling.timezone}.`}
             </DialogDescription>
           </DialogHeader>
 

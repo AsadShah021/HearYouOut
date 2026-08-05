@@ -2,6 +2,7 @@ import { CtaSection } from "@/components/marketing/cta-section";
 import { ListenerDirectory } from "@/components/marketing/listener-directory";
 import { PageHero } from "@/components/marketing/page-hero";
 import { Section } from "@/components/shared/section";
+import { publicAssetExists } from "@/lib/assets";
 import { listeners } from "@/lib/data/listeners";
 import { createMetadata } from "@/lib/seo";
 
@@ -13,6 +14,10 @@ export const metadata = createMetadata({
 });
 
 export default function ListenersPage() {
+  const videoSlugs = listeners
+    .filter((listener) => publicAssetExists(listener.introVideo))
+    .map((listener) => listener.slug);
+
   return (
     <>
       <PageHero
@@ -24,7 +29,7 @@ export default function ListenersPage() {
 
       <Section className="pt-0">
         <div className="container-page">
-          <ListenerDirectory />
+          <ListenerDirectory videoSlugs={videoSlugs} />
         </div>
       </Section>
 

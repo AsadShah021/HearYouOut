@@ -78,6 +78,7 @@ export function Hero() {
                   <ListenerAvatar
                     key={listener.id}
                     name={listener.name}
+                    src={listener.avatar}
                     size="sm"
                     ring
                   />

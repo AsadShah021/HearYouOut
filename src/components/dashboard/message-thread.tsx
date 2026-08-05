@@ -80,7 +80,7 @@ export function MessageThread() {
                 selected ? "bg-muted/70" : "hover:bg-muted/40",
               )}
             >
-              <ListenerAvatar name={person?.name ?? "Listener"} size="sm" online={selected} />
+              <ListenerAvatar name={person?.name ?? "Listener"} src={person?.avatar} size="sm" online={selected} />
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-2">
                   <span className="truncate text-sm font-medium">{person?.name}</span>
@@ -102,7 +102,7 @@ export function MessageThread() {
       {/* Thread */}
       <div className="flex min-w-0 flex-col">
         <header className="border-border/70 flex items-center gap-3 border-b px-5 py-3.5">
-          <ListenerAvatar name={listener?.name ?? "Listener"} size="sm" online />
+          <ListenerAvatar name={listener?.name ?? "Listener"} src={listener?.avatar} size="sm" online />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{listener?.name}</p>
             <p className="text-muted-foreground truncate text-xs">

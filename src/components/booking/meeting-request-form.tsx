@@ -10,6 +10,9 @@ import {
   Check,
   CircleAlert,
   Clock3,
+  EyeOff,
+  MessageSquareQuote,
+  Repeat,
   Loader2,
   Mail,
   MessageSquareText,
@@ -20,6 +23,8 @@ import { toast } from "sonner";
 
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
 import { PreferredDatesCalendar } from "@/components/booking/calendar";
+import { BoundaryNotice } from "@/components/shared/boundary-notice";
+import { ScopeLimits } from "@/components/shared/scope-limits";
 import { toneClasses } from "@/components/shared/mode-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,11 +40,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { listeners } from "@/lib/data/listeners";
-import { services } from "@/lib/data/services";
+import { lifeServices, serviceMap, workServices } from "@/lib/data/services";
 import { requestableModes, site } from "@/lib/data/site";
 import { easeOutExpo } from "@/lib/motion";
 import { cn, formatIsoDay } from "@/lib/utils";
-import type { SessionMode, TimeWindow, Urgency } from "@/types";
+import type { Cadence, SessionMode, TimeWindow, Urgency } from "@/types";
 
 export interface RequestPrefill {
   listener?: string;
@@ -117,11 +122,23 @@ export function MeetingRequestForm({ prefill = {} }: { prefill?: RequestPrefill 
   const [dates, setDates] = React.useState<string[]>([]);
   const [windows, setWindows] = React.useState<TimeWindow[]>([]);
   const [urgency, setUrgency] = React.useState<Urgency>("flexible");
+  const [feedbackMode, setFeedbackMode] = React.useState(false);
+  const [anonymous, setAnonymous] = React.useState(false);
+  const [cadence, setCadence] = React.useState<Cadence | "once">("once");
   const [status, setStatus] = React.useState<"idle" | "sending" | "sent">("idle");
   const [reference, setReference] = React.useState("");
   const [errors, setErrors] = React.useState<string[]>([]);
 
+  const selectedService = topic ? serviceMap[topic] : undefined;
+
   const errorRef = React.useRef<HTMLDivElement>(null);
+
+  // Options that no longer apply must not travel with the request.
+  React.useEffect(() => {
+    if (!selectedService?.allowsFeedback) setFeedbackMode(false);
+    if (!selectedService?.sensitive) setAnonymous(false);
+    if (!selectedService?.standing) setCadence("once");
+  }, [selectedService]);
 
   const toggleWindow = (id: TimeWindow) =>
     setWindows((current) =>
@@ -221,6 +238,32 @@ export function MeetingRequestForm({ prefill = {} }: { prefill?: RequestPrefill 
                     ))}
                   </dd>
                 </div>
+
+                {(feedbackMode || anonymous || cadence !== "once") && (
+                  <div className="sm:col-span-2">
+                    <dt className="text-muted-foreground text-xs">
+                      What we&rsquo;ve noted
+                    </dt>
+                    <dd className="mt-1 flex flex-wrap gap-1.5">
+                      {cadence !== "once" && (
+                        <Badge variant="brand">
+                          <Repeat className="size-3" />
+                          {cadence === "weekly" ? "Every week" : "Every two weeks"}
+                        </Badge>
+                      )}
+                      {feedbackMode && (
+                        <Badge variant="info">
+                          <MessageSquareQuote className="size-3" /> Feedback mode on
+                        </Badge>
+                      )}
+                      {anonymous && (
+                        <Badge variant="muted">
+                          <EyeOff className="size-3" /> Anonymous
+                        </Badge>
+                      )}
+                    </dd>
+                  </div>
+                )}
               </dl>
             </div>
 
@@ -403,7 +446,12 @@ export function MeetingRequestForm({ prefill = {} }: { prefill?: RequestPrefill 
                 <SelectValue placeholder="Choose a starting point (optional)" />
               </SelectTrigger>
               <SelectContent>
-                {services.map((service) => (
+                {workServices.map((service) => (
+                  <SelectItem key={service.slug} value={service.slug}>
+                    {service.title}
+                  </SelectItem>
+                ))}
+                {lifeServices.map((service) => (
                   <SelectItem key={service.slug} value={service.slug}>
                     {service.title}
                   </SelectItem>
@@ -411,6 +459,90 @@ export function MeetingRequestForm({ prefill = {} }: { prefill?: RequestPrefill 
               </SelectContent>
             </Select>
           </div>
+
+          {/* Standing check-ins repeat, so they need a cadence rather than a one-off slot. */}
+          {selectedService?.standing && (
+            <div className="border-primary/25 bg-primary/[0.04] flex flex-col gap-3 rounded-2xl border p-4">
+              <div className="flex items-center gap-2">
+                <Repeat className="text-primary size-4" />
+                <p className="text-sm font-medium">This one repeats</p>
+              </div>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Check-ins are 15 minutes with the same listener, held at the same
+                time each week. The days you pick below become your standing slot
+                — we&rsquo;ll confirm the first one and it recurs from there.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(["weekly", "fortnightly"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={cadence === option}
+                    onClick={() => setCadence(cadence === option ? "once" : option)}
+                    className={cn(
+                      "focus-visible:ring-ring/50 rounded-xl border px-3.5 py-2 text-xs font-medium capitalize transition-colors outline-none focus-visible:ring-[3px]",
+                      cadence === option
+                        ? "border-primary/45 bg-primary/[0.08] text-primary"
+                        : "border-border/70 text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    Every {option === "weekly" ? "week" : "two weeks"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Opt-in only — listening without advising stays the default. */}
+          {selectedService?.allowsFeedback && (
+            <label className="border-info/30 bg-info/[0.04] flex cursor-pointer items-start gap-3 rounded-2xl p-4">
+              <Checkbox
+                checked={feedbackMode}
+                onChange={(event) => setFeedbackMode(event.target.checked)}
+                className="mt-0.5"
+              />
+              <span className="min-w-0">
+                <span className="flex items-center gap-1.5 text-sm font-medium">
+                  <MessageSquareQuote className="size-3.5" />
+                  Turn on feedback mode
+                </span>
+                <span className="text-muted-foreground mt-1 block text-xs leading-relaxed">
+                  Normally we listen without offering opinions — that&rsquo;s the
+                  whole service. Tick this and your listener will also tell you
+                  what they honestly think, once you&rsquo;ve finished saying
+                  everything you came to say.
+                </span>
+              </span>
+            </label>
+          )}
+
+          {/* Heavier topics: state the boundary, and offer to drop the name. */}
+          {selectedService?.sensitive && (
+            <>
+              <BoundaryNotice />
+              {selectedService.escalation && (
+                <ScopeLimits service={selectedService} />
+              )}
+              <label className="border-border/60 bg-muted/30 flex cursor-pointer items-start gap-3 rounded-2xl border p-4">
+                <Checkbox
+                  checked={anonymous}
+                  onChange={(event) => setAnonymous(event.target.checked)}
+                  className="mt-0.5"
+                />
+                <span className="min-w-0">
+                  <span className="flex items-center gap-1.5 text-sm font-medium">
+                    <EyeOff className="size-3.5" />
+                    Keep this anonymous
+                  </span>
+                  <span className="text-muted-foreground mt-1 block text-xs leading-relaxed">
+                    Your name is hidden from everyone except the listener taking
+                    the session, and it never appears in our queue, notes or
+                    reports. We still need your email to send the invitation.
+                  </span>
+                </span>
+              </label>
+            </>
+          )}
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="req-context">Anything we should know first?</Label>
@@ -621,7 +753,7 @@ export function MeetingRequestForm({ prefill = {} }: { prefill?: RequestPrefill 
           <div className="flex items-center gap-3">
             <div className="flex -space-x-2.5">
               {listeners.slice(0, 3).map((listener) => (
-                <ListenerAvatar key={listener.id} name={listener.name} size="xs" ring />
+                <ListenerAvatar key={listener.id} name={listener.name} src={listener.avatar} size="xs" ring />
               ))}
             </div>
             <p className="text-sm font-medium">Don&rsquo;t want to wait?</p>

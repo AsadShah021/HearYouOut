@@ -63,6 +63,21 @@ export interface Listener {
   verified: boolean;
   favourite?: boolean;
   nextAvailable: string;
+  /** 30–60s self-introduction. Absent until the file is added to /public/videos. */
+  introVideo?: string;
+  introPoster?: string;
+  /** Shown beneath the player; required alongside captions for accessibility. */
+  introTranscript?: string;
+}
+
+export interface Founder {
+  id: string;
+  name: string;
+  role: string;
+  photo: string;
+  /** First-person, signed. The whole point is that it reads as a person. */
+  letter: string[];
+  signature: string;
 }
 
 export interface Review {
@@ -100,6 +115,13 @@ export interface Plan {
 /*                                  Services                                  */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * "work" covers ideas, career and decisions. "life" covers the heavier personal
+ * conversations, which carry an explicit boundary notice and can be held
+ * anonymously.
+ */
+export type ServiceGroup = "work" | "life";
+
 export interface Service {
   slug: string;
   title: string;
@@ -107,9 +129,27 @@ export interface Service {
   description: string;
   icon: LucideIcon;
   tone: "violet" | "teal" | "amber" | "rose";
+  group: ServiceGroup;
   outcomes: string[];
   prompts: string[];
   recommendedModes: SessionMode[];
+  /**
+   * Opt-in only. Our default is listening without advising; these are the
+   * conversations where a member may explicitly ask for an opinion instead.
+   */
+  allowsFeedback?: boolean;
+  /** Renders the boundary notice and offers anonymity. */
+  sensitive?: boolean;
+  /**
+   * Topics where listening alone may not be enough. Renders an explicit
+   * scope-limits panel and signposts specialist organisations before the person
+   * ever books, and flags the request for a referral check on our side.
+   */
+  escalation?: boolean;
+  /** Specialist services to signpost for this topic. */
+  supportLines?: { region: string; line: string }[];
+  /** Recurring 15-minute format rather than a one-off session. */
+  standing?: boolean;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -122,6 +162,9 @@ export type RequestStatus = "new" | "reviewing" | "scheduled" | "declined";
 export type TimeWindow = "early" | "morning" | "afternoon" | "evening" | "late";
 
 export type Urgency = "flexible" | "this-week" | "asap";
+
+/** Standing check-ins repeat; everything else is a one-off. */
+export type Cadence = "weekly" | "fortnightly";
 
 export interface MeetingRequest {
   id: string;
@@ -142,6 +185,12 @@ export interface MeetingRequest {
   status: RequestStatus;
   scheduledFor?: string;
   isReturning?: boolean;
+  /** Member explicitly asked for an opinion rather than pure listening. */
+  feedbackMode?: boolean;
+  /** Name is withheld from everyone but the listener taking the session. */
+  anonymous?: boolean;
+  /** Set for recurring 15-minute accountability check-ins. */
+  cadence?: Cadence;
 }
 
 /* -------------------------------------------------------------------------- */

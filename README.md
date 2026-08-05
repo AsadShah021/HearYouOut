@@ -50,10 +50,23 @@ npm run build
 
 Other scripts: `npm run typecheck`, `npm run lint`, `npm start`.
 
-> **Stop the dev server before running `npm run build`.** Both write to `.next`,
-> and building underneath a running `next dev` corrupts its cache — the symptom
-> is a runtime error like `Cannot find module './5611.js'` on every route. The
-> fix is to stop the server, delete `.next`, and start it again.
+> **Don't run `npm run build` while `npm run dev` is running.** Both write to
+> `.next`, and building underneath a live dev server corrupts its cache — every
+> route then fails with `Internal Server Error` or
+> `Cannot find module './5611.js'`.
+>
+> To recover: stop the dev server, then
+>
+> ```bash
+> rm -rf .next && npm run dev
+> ```
+>
+> To check a build *without* disturbing a running dev server, build into a
+> separate directory:
+>
+> ```bash
+> NEXT_DIST_DIR=.next-verify npm run build
+> ```
 
 ---
 

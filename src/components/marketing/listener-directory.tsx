@@ -23,7 +23,12 @@ import type { SessionMode } from "@/types";
 
 type SortKey = "recommended" | "rating" | "experience" | "soonest";
 
-export function ListenerDirectory() {
+export function ListenerDirectory({
+  videoSlugs = [],
+}: {
+  /** Slugs whose intro video file exists, resolved server-side. */
+  videoSlugs?: string[];
+}) {
   const [query, setQuery] = React.useState("");
   const [specialty, setSpecialty] = React.useState<string>("all");
   const [modes, setModes] = React.useState<SessionMode[]>([]);
@@ -178,7 +183,10 @@ export function ListenerDirectory() {
               exit={{ opacity: 0, scale: 0.96 }}
               transition={{ duration: 0.3, ease: easeOutExpo }}
             >
-              <ListenerCard listener={listener} />
+              <ListenerCard
+                listener={listener}
+                hasVideo={videoSlugs.includes(listener.slug)}
+              />
             </motion.div>
           ))}
         </AnimatePresence>

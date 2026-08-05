@@ -164,7 +164,7 @@ export function ChatPanel({
       >
         <div className="flex items-center gap-3">
           <span className="relative flex">
-            <ListenerAvatar name={onShift.name} size={isWidget ? "md" : "lg"} online />
+            <ListenerAvatar name={onShift.name} src={onShift.avatar} size={isWidget ? "md" : "lg"} online />
           </span>
           <div className="min-w-0">
             <p className="text-sm font-semibold">{onShift.name} is on shift</p>
@@ -247,7 +247,7 @@ export function ChatPanel({
           isWidget && "px-4",
         )}
       >
-        <ListenerAvatar name={onShift.name} size="sm" online />
+        <ListenerAvatar name={onShift.name} src={onShift.avatar} size="sm" online />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{onShift.name}</p>
           <p className="text-muted-foreground flex items-center gap-1.5 truncate text-xs">

@@ -75,7 +75,7 @@ export default function ChatPage() {
                   <div className="mt-5 flex flex-col gap-4">
                     {online.map((listener) => (
                       <div key={listener.id} className="flex items-center gap-3">
-                        <ListenerAvatar name={listener.name} size="sm" online />
+                        <ListenerAvatar name={listener.name} src={listener.avatar} size="sm" online />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">{listener.name}</p>
                           <p className="text-muted-foreground truncate text-xs">

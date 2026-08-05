@@ -43,7 +43,7 @@ export function SessionCard({
       )}
 
       <div className="relative flex items-start gap-4">
-        <ListenerAvatar name={listener?.name ?? "Listener"} size={featured ? "lg" : "md"} />
+        <ListenerAvatar name={listener?.name ?? "Listener"} src={listener?.avatar} size={featured ? "lg" : "md"} />
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">

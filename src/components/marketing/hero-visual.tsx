@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { CalendarClock, Check, Video } from "lucide-react";
 
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
+import { getListenerBySlug } from "@/lib/data/listeners";
 import { ModeBadge } from "@/components/shared/mode-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ const chatBeats = [
 ];
 
 export function HeroVisual() {
+  const amara = getListenerBySlug("amara-okonkwo")!;
   const rotateXRaw = useMotionValue(0);
   const rotateYRaw = useMotionValue(0);
   const rotateX = useSpring(rotateXRaw, { stiffness: 180, damping: 24 });
@@ -104,7 +106,7 @@ export function HeroVisual() {
             {/* Live session panel */}
             <div className="border-border/60 flex flex-col gap-5 p-5 sm:border-r sm:p-6">
               <div className="flex items-start gap-3.5">
-                <ListenerAvatar name="Amara Okonkwo" size="lg" online />
+                <ListenerAvatar name={amara.name} src={amara.avatar} size="lg" online />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">Amara Okonkwo</p>
                   <p className="text-muted-foreground truncate text-xs">

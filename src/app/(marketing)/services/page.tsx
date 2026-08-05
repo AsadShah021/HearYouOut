@@ -1,13 +1,23 @@
 import Link from "next/link";
-import { ArrowRight, Check, Quote } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  MessageSquareQuote,
+  Quote,
+  Repeat,
+} from "lucide-react";
 
 import { CtaSection } from "@/components/marketing/cta-section";
 import { PageHero } from "@/components/marketing/page-hero";
 import { Reveal, Stagger, RevealItem } from "@/components/motion/reveal";
 import { ModeBadge, toneClasses } from "@/components/shared/mode-badge";
+import { BoundaryNotice } from "@/components/shared/boundary-notice";
+import { ScopeLimits } from "@/components/shared/scope-limits";
 import { Section, SectionHeading } from "@/components/shared/section";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { services } from "@/lib/data/services";
+import { lifeServices, workServices } from "@/lib/data/services";
+import type { Service } from "@/types";
 import { sessionModes } from "@/lib/data/site";
 import { createMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
@@ -19,32 +29,26 @@ export const metadata = createMetadata({
   path: "/services",
 });
 
-export default function ServicesPage() {
+function GroupHeading({
+  title,
+  body,
+  className,
+}: {
+  title: string;
+  body: string;
+  className?: string;
+}) {
   return (
-    <>
-      <PageHero
-        eyebrow="Eight ways to start"
-        title="Every conversation starts somewhere. Ours starts"
-        highlight="with you talking"
-        description="These aren't packages or programmes — they're the topics people bring most often. Pick the one that fits, or book a general session and see where it goes."
-      >
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button asChild size="lg" variant="gradient">
-            <Link href="/book">
-              Request a meeting <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/chat">Or start a chat now</Link>
-          </Button>
-        </div>
-      </PageHero>
+    <Reveal className={cn("mb-8", className)}>
+      <h2 className="text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">{title}</h2>
+      <p className="text-muted-foreground mt-2.5 max-w-2xl leading-relaxed">{body}</p>
+    </Reveal>
+  );
+}
 
-      <Section className="pt-4">
-        <div className="container-page">
-          <div className="flex flex-col gap-4">
-            {services.map((service, index) => (
-              <Reveal key={service.slug} id={service.slug} className="scroll-mt-28">
+function ServiceArticle({ service, index }: { service: Service; index: number }) {
+  return (
+              <Reveal id={service.slug} className="scroll-mt-28">
                 <article
                   className={cn(
                     "border-border/70 bg-card group relative grid gap-8 overflow-hidden rounded-3xl border p-7 sm:p-9 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12",
@@ -76,6 +80,24 @@ export default function ServicesPage() {
                       </div>
                     </div>
 
+                    {(service.allowsFeedback || service.standing || service.sensitive) && (
+                      <div className="mb-5 flex flex-wrap gap-1.5">
+                        {service.standing && (
+                          <Badge variant="brand">
+                            <Repeat className="size-3" /> Recurring · 15 min
+                          </Badge>
+                        )}
+                        {service.allowsFeedback && (
+                          <Badge variant="info">
+                            <MessageSquareQuote className="size-3" /> Feedback mode available
+                          </Badge>
+                        )}
+                        {service.sensitive && (
+                          <Badge variant="muted">Can be anonymous</Badge>
+                        )}
+                      </div>
+                    )}
+
                     <p className="text-foreground/90 text-[1.0625rem] leading-relaxed font-medium">
                       {service.summary}
                     </p>
@@ -97,6 +119,14 @@ export default function ServicesPage() {
                         Request this conversation <ArrowRight className="size-3.5" />
                       </Link>
                     </Button>
+
+                    {service.sensitive && (
+                      <BoundaryNotice variant="compact" className="mt-4" />
+                    )}
+
+                    {service.escalation && (
+                      <ScopeLimits service={service} className="mt-5" />
+                    )}
                   </div>
 
                   <div className="relative flex flex-col gap-5">
@@ -134,6 +164,56 @@ export default function ServicesPage() {
                   </div>
                 </article>
               </Reveal>
+  );
+}
+
+
+export default function ServicesPage() {
+  return (
+    <>
+      <PageHero
+        eyebrow={`${workServices.length + lifeServices.length} ways to start`}
+        title="Every conversation starts somewhere. Ours starts"
+        highlight="with you talking"
+        description="These aren't packages or programmes — they're the topics people bring most often. Some are about what you're building; some are about how life actually feels. Pick whichever fits, or start a general session and see where it goes."
+      >
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Button asChild size="lg" variant="gradient">
+            <Link href="/book">
+              Request a meeting <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link href="/chat">Or start a chat now</Link>
+          </Button>
+        </div>
+      </PageHero>
+
+      <Section className="pt-4">
+        <div className="container-page">
+          <GroupHeading
+            title="Work, ideas and decisions"
+            body="The conversations about what you're building, where you're going, and what to do next."
+          />
+          <div className="flex flex-col gap-4">
+            {workServices.map((service, index) => (
+              <ServiceArticle key={service.slug} service={service} index={index} />
+            ))}
+          </div>
+
+          <GroupHeading
+            title="Life and how it actually feels"
+            body="The heavier conversations. These can be held anonymously, and every one of them carries the same boundary: we listen, we don't treat."
+            className="mt-16"
+          />
+          <BoundaryNotice className="mb-6" />
+          <div className="flex flex-col gap-4">
+            {lifeServices.map((service, index) => (
+              <ServiceArticle
+                key={service.slug}
+                service={service}
+                index={workServices.length + index}
+              />
             ))}
           </div>
         </div>

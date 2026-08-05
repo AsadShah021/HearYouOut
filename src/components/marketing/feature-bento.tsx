@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
+import { listeners } from "@/lib/data/listeners";
 import { Stagger, RevealItem } from "@/components/motion/reveal";
 import { Section, SectionHeading } from "@/components/shared/section";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,9 @@ const smallFeatures = [
   { icon: NotebookPen, title: "Save notes & ideas", body: "Everything worth keeping, captured and searchable." },
   { icon: Star, title: "Highly rated listeners", body: "Ratings from real sessions only — no incentives, no editing." },
 ];
+
+/** The three shown in the favourites illustration. */
+const favouriteShowcase = listeners.slice(0, 3);
 
 export function FeatureBento() {
   return (
@@ -151,17 +155,17 @@ export function FeatureBento() {
               </div>
 
               <div className="flex shrink-0 gap-3 sm:flex-col">
-                {["Amara Okonkwo", "Daniel Reyes", "Mei Lin Zhao"].map((name, i) => (
+                {favouriteShowcase.map((person, i) => (
                   <div
-                    key={name}
+                    key={person.slug}
                     className={cn(
                       "border-border/60 bg-background/60 flex items-center gap-3 rounded-2xl border p-2.5 pr-4",
                       i === 0 && "border-primary/30 shadow-lift",
                     )}
                   >
-                    <ListenerAvatar name={name} size="sm" />
+                    <ListenerAvatar name={person.name} src={person.avatar} size="sm" />
                     <div className="hidden sm:block">
-                      <p className="text-xs font-medium">{name}</p>
+                      <p className="text-xs font-medium">{person.name}</p>
                       <p className="text-muted-foreground text-[0.625rem]">
                         {i === 0 ? "Preferred listener" : "Favourite"}
                       </p>

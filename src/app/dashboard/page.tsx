@@ -19,10 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { PendingRequestCard } from "@/components/dashboard/pending-request-card";
+import { StandingCheckinCard } from "@/components/dashboard/standing-checkin-card";
 import {
   conversations,
   ideas,
   meetingRequests,
+  standingCheckin,
   notes,
   upcomingSessions,
   usage,
@@ -82,6 +84,17 @@ export default function DashboardPage() {
             <SessionCard session={nextSession} featured />
           </div>
 
+          <div>
+            <h2 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
+              Your weekly slot
+            </h2>
+            <StandingCheckinCard
+              listenerId="l-mei"
+              nextAt={standingCheckin.nextAt}
+              weeksHeld={standingCheckin.weeksHeld}
+            />
+          </div>
+
           {pendingRequest && (
             <div>
               <h2 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
@@ -125,7 +138,7 @@ export default function DashboardPage() {
                     key={session.id}
                     className="border-border/60 hover:border-primary/25 flex items-center gap-3.5 rounded-2xl border p-3.5 transition-colors"
                   >
-                    <ListenerAvatar name={listener?.name ?? "Listener"} size="sm" />
+                    <ListenerAvatar name={listener?.name ?? "Listener"} src={listener?.avatar} size="sm" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{listener?.name}</p>
                       <p className="text-muted-foreground truncate text-xs">
@@ -250,7 +263,7 @@ export default function DashboardPage() {
                     href="/dashboard/messages"
                     className="hover:bg-muted/60 flex items-start gap-3 rounded-xl p-2.5 transition-colors"
                   >
-                    <ListenerAvatar name={listener?.name ?? "Listener"} size="sm" />
+                    <ListenerAvatar name={listener?.name ?? "Listener"} src={listener?.avatar} size="sm" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <p className="truncate text-xs font-medium">{listener?.name}</p>
@@ -304,7 +317,7 @@ export default function DashboardPage() {
             <CardContent className="flex flex-col gap-2.5">
               {favourites.map((listener) => (
                 <div key={listener.id} className="flex items-center gap-3">
-                  <ListenerAvatar name={listener.name} size="sm" online />
+                  <ListenerAvatar name={listener.name} src={listener.avatar} size="sm" online />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-medium">{listener.name}</p>
                     <p className="text-muted-foreground truncate text-[0.6875rem]">

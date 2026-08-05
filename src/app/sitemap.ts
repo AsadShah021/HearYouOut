@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { listeners } from "@/lib/data/listeners";
 import { site } from "@/lib/data/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -18,7 +19,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/terms", priority: 0.3, changeFrequency: "yearly" },
   ];
 
-  return routes.map((route) => ({
+  // One entry per listener profile — these are the pages people search by name.
+  const profiles = listeners.map((listener) => ({
+    path: `/listeners/${listener.slug}`,
+    priority: 0.7,
+    changeFrequency: "monthly" as const,
+  }));
+
+  return [...routes, ...profiles].map((route) => ({
     url: `${site.url}${route.path}`,
     lastModified,
     changeFrequency: route.changeFrequency,
