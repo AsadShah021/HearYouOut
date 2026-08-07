@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquareText, Video } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { AuroraBackdrop } from "@/components/motion/aurora-backdrop";
 import { Reveal } from "@/components/motion/reveal";
@@ -24,21 +24,19 @@ export function CtaSection() {
                 <span className="font-display text-[1.08em] italic">right now</span>.
               </h2>
               <p className="text-muted-foreground mt-5 max-w-lg text-base leading-relaxed">
-                Open a chat and write one sentence — that&rsquo;s the whole
-                commitment. When you want to hear a voice instead, ask us and
-                we&rsquo;ll find a time. No pressure at any step.
+                Creating an account takes a minute and costs nothing. Once
+                you&rsquo;re in you can message us whenever you like, or ask for
+                a voice or face-to-face conversation. No pressure at any step.
               </p>
 
               <div className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                 <Button asChild size="xl" variant="gradient" className="w-full sm:w-auto">
-                  <Link href="/chat">
-                    <MessageSquareText className="size-4" /> Start a chat now
+                  <Link href="/sign-up">
+                    Create your account <ArrowRight className="size-4" />
                   </Link>
                 </Button>
                 <Button asChild size="xl" variant="outline" className="w-full sm:w-auto">
-                  <Link href="/book?mode=meet-video">
-                    <Video className="size-4" /> Request a Google Meet session
-                  </Link>
+                  <Link href="/sign-in">Log in</Link>
                 </Button>
               </div>
 

@@ -14,19 +14,19 @@ const steps = [
   {
     icon: MessagesSquare,
     title: "Open a chat, or send a request",
-    body: "Chat needs nothing but an opening sentence. For a voice or Google Meet session, fill in a short request form instead.",
+    body: "Chat needs nothing but an opening sentence. For a voice or Google Meet session, send us a short request — your name, your email, and what you'd like to talk about.",
     aside: "Chat starts instantly",
   },
   {
     icon: UserSearch,
     title: "A person reads it",
     body: "Not a queue and not an algorithm. Someone on our in-house team picks up your chat, or reads your request and finds the right listener for it.",
-    aside: "Our whole team is in-house",
+    aside: "A person, every time",
   },
   {
     icon: CalendarDays,
     title: "We confirm the time",
-    body: "For meetings we come back with a confirmed slot from the days you offered, plus a calendar invitation and Google Meet link.",
+    body: "For meetings we email you to agree a time that suits you, then send the calendar invitation and Google Meet link.",
     aside: "Usually within 4 hours",
   },
   {

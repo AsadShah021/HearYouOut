@@ -67,7 +67,7 @@ export function ListenerShell({ children }: { children: React.ReactNode }) {
             <Switch defaultChecked aria-label="Accepting new clients" />
           </div>
           <Button asChild size="sm" variant="outline" className="mt-3 w-full">
-            <Link href="/listeners">View my public profile</Link>
+            <Link href="/">View the public site</Link>
           </Button>
         </div>
       }

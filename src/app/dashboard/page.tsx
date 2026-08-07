@@ -1,334 +1,180 @@
+"use client";
+
 import Link from "next/link";
 import {
   ArrowRight,
-  CalendarCheck,
+  CalendarClock,
   Clock3,
-  Lightbulb,
   MessagesSquare,
-  NotebookPen,
-  Sparkles,
+  ShieldCheck,
+  Video,
 } from "lucide-react";
 
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
 import { PageHeader } from "@/components/dashboard/app-shell";
-import { SessionCard } from "@/components/dashboard/session-card";
-import { StatCard } from "@/components/dashboard/stat-card";
-import { ModeBadge } from "@/components/shared/mode-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { PendingRequestCard } from "@/components/dashboard/pending-request-card";
-import { StandingCheckinCard } from "@/components/dashboard/standing-checkin-card";
-import {
-  conversations,
-  ideas,
-  meetingRequests,
-  standingCheckin,
-  notes,
-  upcomingSessions,
-  usage,
-} from "@/lib/data/demo";
-import { getListener, listeners } from "@/lib/data/listeners";
-import { planMap } from "@/lib/data/plans";
-import { formatDate, formatRelativeDay } from "@/lib/utils";
+import { firstName, useAuth } from "@/lib/auth";
+import { listeners } from "@/lib/data/listeners";
+import { site } from "@/lib/data/site";
+import { cn } from "@/lib/utils";
+
+/*
+ * Testing-phase dashboard: the two things an account can do, and nothing else.
+ *
+ * The richer overview — upcoming sessions, standing check-in, session stats,
+ * recent notes, subscription usage and favourite listeners — is preserved in
+ * `page.full.tsx` beside this file. See TESTING-SCOPE.md to restore it.
+ */
+const actions = [
+  {
+    href: "/chat",
+    icon: MessagesSquare,
+    title: "Send us a message",
+    body: "Write whatever's on your mind. Someone on the team reads it and replies in the same thread — no appointment needed.",
+    cta: "Open chat",
+    tone: "from-[var(--brand-teal)] to-[var(--brand-violet-soft)]",
+    meta: "Usually answered in minutes",
+  },
+  {
+    href: "/book",
+    icon: CalendarClock,
+    title: "Schedule a meeting",
+    body: "Prefer to talk out loud? Tell us what you'd like to discuss and we'll email you to agree a time.",
+    cta: "Request a time",
+    tone: "from-[var(--brand-violet)] to-[var(--brand-rose)]",
+    meta: `A person replies within ${site.requestResponseTime}`,
+  },
+];
 
 export default function DashboardPage() {
-  const [nextSession, ...laterSessions] = upcomingSessions;
-  const plan = planMap[usage.planId];
-  const remaining =
-    usage.sessionsIncluded === "unlimited"
-      ? "∞"
-      : `${usage.sessionsIncluded - usage.sessionsUsed}`;
-  const usagePercent =
-    usage.sessionsIncluded === "unlimited"
-      ? 100
-      : Math.round((usage.sessionsUsed / usage.sessionsIncluded) * 100);
-  const renewsInDays = Math.max(
-    0,
-    Math.ceil((new Date(usage.cycleRenewsAt).getTime() - Date.now()) / 86_400_000),
-  );
-  const favourites = listeners.filter((listener) => listener.favourite);
-  const pendingRequest = meetingRequests.find(
-    (request) => request.status === "new" || request.status === "reviewing",
-  );
+  const { user } = useAuth();
+  const onShift = listeners.slice(0, 3);
 
   return (
     <>
       <PageHeader
-        title="Good to see you, Jordan"
-        description="One session today, two unread messages, and a request still with the team."
-        actions={
-          <>
-            <Button asChild variant="outline">
-              <Link href="/dashboard/messages">
-                <MessagesSquare className="size-4" /> Chat with us
-              </Link>
-            </Button>
-            <Button asChild variant="gradient">
-              <Link href="/book">
-                Request a meeting <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          </>
-        }
+        title={`Good to see you, ${firstName(user)}`}
+        description="Two ways to talk to us. Start wherever feels easiest — you can switch at any point."
       />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">
-          {/* Next up */}
-          <div>
-            <h2 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
-              Next up
-            </h2>
-            <SessionCard session={nextSession} featured />
-          </div>
-
-          <div>
-            <h2 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
-              Your weekly slot
-            </h2>
-            <StandingCheckinCard
-              listenerId="l-mei"
-              nextAt={standingCheckin.nextAt}
-              weeksHeld={standingCheckin.weeksHeld}
-            />
-          </div>
-
-          {pendingRequest && (
-            <div>
-              <h2 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
-                Requested, not yet confirmed
-              </h2>
-              <PendingRequestCard request={pendingRequest} />
-            </div>
-          )}
-
           <div className="grid gap-4 sm:grid-cols-2">
-            <StatCard
-              label="Sessions left this month"
-              value={remaining}
-              hint={`Renews in ${renewsInDays} days`}
-              icon={CalendarCheck}
-              tone="brand"
-            />
-            <StatCard
-              label="Minutes talked"
-              value={`${usage.minutesTalked}`}
-              hint="Across 4 sessions this cycle"
-              icon={Clock3}
-              trend={{ value: "+18%", direction: "up" }}
-            />
+            {actions.map((action) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="group border-border/70 bg-card hover:border-primary/35 hover:shadow-lift relative flex flex-col gap-4 overflow-hidden rounded-3xl border p-6 transition-all duration-300 hover:-translate-y-1"
+              >
+                <span
+                  className={cn(
+                    "grid size-12 place-items-center rounded-2xl bg-linear-to-br text-white",
+                    action.tone,
+                  )}
+                >
+                  <action.icon className="size-5.5" />
+                </span>
+
+                <div className="flex-1">
+                  <h2 className="text-base font-semibold">{action.title}</h2>
+                  <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+                    {action.body}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground text-xs">{action.meta}</span>
+                  <span className="text-primary inline-flex items-center gap-1 text-sm font-medium">
+                    {action.cta}
+                    <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
 
-          {/* Later this week */}
           <Card>
-            <CardHeader className="flex-row items-center justify-between">
-              <CardTitle>Coming up</CardTitle>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/dashboard/sessions">View all</Link>
-              </Button>
+            <CardHeader>
+              <CardTitle>Nothing scheduled yet</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              {laterSessions.map((session) => {
-                const listener = getListener(session.listenerId);
-                const startsAt = new Date(session.startsAt);
-                return (
-                  <div
-                    key={session.id}
-                    className="border-border/60 hover:border-primary/25 flex items-center gap-3.5 rounded-2xl border p-3.5 transition-colors"
-                  >
-                    <ListenerAvatar name={listener?.name ?? "Listener"} src={listener?.avatar} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{listener?.name}</p>
-                      <p className="text-muted-foreground truncate text-xs">
-                        {session.topic}
-                      </p>
-                    </div>
-                    <div className="hidden text-right sm:block">
-                      <p className="text-xs font-medium">{formatRelativeDay(startsAt)}</p>
-                      <p className="text-muted-foreground text-xs">
-                        {formatDate(startsAt, { hour: "numeric", minute: "2-digit" })}
-                      </p>
-                    </div>
-                    <ModeBadge mode={session.mode} showLabel={false} />
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-
-          {/* Notes */}
-          <Card>
-            <CardHeader className="flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <NotebookPen className="text-muted-foreground size-4" />
-                Recent notes
-              </CardTitle>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/dashboard/notes">All notes</Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-2">
-              {notes.slice(0, 2).map((note) => (
-                <Link
-                  key={note.id}
-                  href="/dashboard/notes"
-                  className="border-border/60 hover:border-primary/25 flex flex-col gap-2 rounded-2xl border p-4 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Badge variant={note.author === "listener" ? "brand" : "muted"}>
-                      {note.author === "listener" ? "From listener" : "My note"}
-                    </Badge>
-                    <span className="text-muted-foreground text-xs">
-                      {formatRelativeDay(note.createdAt)}
-                    </span>
-                  </div>
-                  <p className="text-sm font-medium">{note.title}</p>
-                  <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed">
-                    {note.excerpt}
-                  </p>
-                </Link>
-              ))}
+            <CardContent>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Once we&rsquo;ve agreed a time, your meeting appears here with a
+                Join button and a Google Meet link. You can reschedule or cancel
+                free of charge up to four hours beforehand.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                <Button asChild variant="gradient" size="sm">
+                  <Link href="/book">
+                    <Video className="size-3.5" /> Schedule your first meeting
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/chat">
+                    <MessagesSquare className="size-3.5" /> Message us instead
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right rail */}
         <div className="flex flex-col gap-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Subscription</CardTitle>
+            <CardHeader className="flex-row items-center justify-between">
+              <CardTitle>On shift now</CardTitle>
+              <Badge variant="success">
+                <span className="bg-success size-1.5 rounded-full" />
+                Online
+              </Badge>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold">{plan.name}</p>
-                  <p className="text-muted-foreground text-xs">
-                    ${plan.priceMonthly}/month
-                  </p>
-                </div>
-                <Badge variant="brand">
-                  <Sparkles className="size-3" /> Active
-                </Badge>
-              </div>
-
-              <div>
-                <div className="mb-2 flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Live sessions</span>
-                  <span className="font-semibold tabular-nums">
-                    {usage.sessionsUsed} / {usage.sessionsIncluded}
-                  </span>
-                </div>
-                <Progress value={usagePercent} />
-              </div>
-
-              <dl className="border-border/60 grid grid-cols-2 gap-3 border-t pt-4 text-xs">
-                <div>
-                  <dt className="text-muted-foreground">Messages sent</dt>
-                  <dd className="mt-0.5 font-semibold tabular-nums">
-                    {usage.messagesUsed}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-muted-foreground">Renews</dt>
-                  <dd className="mt-0.5 font-semibold">
-                    {formatDate(usage.cycleRenewsAt, { month: "short", day: "numeric" })}
-                  </dd>
-                </div>
-              </dl>
-
-              <Button asChild variant="outline" size="sm" className="w-full">
-                <Link href="/dashboard/subscription">Manage subscription</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <MessagesSquare className="text-muted-foreground size-4" />
-                Active chats
-              </CardTitle>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/dashboard/messages">Open</Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2">
-              {conversations.slice(0, 3).map((conversation) => {
-                const listener = getListener(conversation.listenerId);
-                return (
-                  <Link
-                    key={conversation.id}
-                    href="/dashboard/messages"
-                    className="hover:bg-muted/60 flex items-start gap-3 rounded-xl p-2.5 transition-colors"
-                  >
-                    <ListenerAvatar name={listener?.name ?? "Listener"} src={listener?.avatar} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate text-xs font-medium">{listener?.name}</p>
-                        {conversation.unread > 0 && (
-                          <span className="bg-primary size-1.5 shrink-0 rounded-full" />
-                        )}
-                      </div>
-                      <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                        {conversation.lastMessage}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="text-muted-foreground size-4" />
-                Saved ideas
-              </CardTitle>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/dashboard/ideas">All</Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2.5">
-              {ideas.slice(0, 3).map((idea) => (
-                <Link
-                  key={idea.id}
-                  href="/dashboard/ideas"
-                  className="border-border/60 hover:border-primary/25 rounded-xl border p-3 transition-colors"
-                >
-                  <p className="truncate text-xs font-medium">{idea.title}</p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <Progress value={idea.confidence} className="h-1" />
-                    <span className="text-muted-foreground shrink-0 text-[0.625rem] tabular-nums">
-                      {idea.confidence}%
-                    </span>
+              {onShift.map((listener) => (
+                <div key={listener.id} className="flex items-center gap-3">
+                  <ListenerAvatar
+                    name={listener.name}
+                    src={listener.avatar}
+                    size="sm"
+                    online
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{listener.name}</p>
+                    <p className="text-muted-foreground truncate text-xs">
+                      {listener.specialties[0]}
+                    </p>
                   </div>
-                </Link>
+                </div>
               ))}
+              <p className="text-muted-foreground border-border/60 border-t pt-4 text-xs leading-relaxed">
+                Whoever is free picks up your message. You&rsquo;ll always know
+                who you&rsquo;re talking to.
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Favourite listeners</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <ShieldCheck className="text-muted-foreground size-4" />
+                Your privacy
+              </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-2.5">
-              {favourites.map((listener) => (
-                <div key={listener.id} className="flex items-center gap-3">
-                  <ListenerAvatar name={listener.name} src={listener.avatar} size="sm" online />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium">{listener.name}</p>
-                    <p className="text-muted-foreground truncate text-[0.6875rem]">
-                      {listener.nextAvailable}
-                    </p>
-                  </div>
-                  <Button asChild size="sm" variant="subtle">
-                    <Link href={`/book?listener=${listener.id}`}>Request</Link>
-                  </Button>
-                </div>
-              ))}
+            <CardContent className="text-muted-foreground flex flex-col gap-3 text-sm leading-relaxed">
+              <p className="flex items-start gap-2.5">
+                <Clock3 className="mt-0.5 size-3.5 shrink-0" />
+                Sessions are never recorded, and chats are encrypted in transit
+                and at rest.
+              </p>
+              <p>
+                HearMeOut is a listening service — not therapy, counseling or
+                crisis support.{" "}
+                <Link href="/#safety" className="text-foreground underline underline-offset-2">
+                  Safety resources
+                </Link>
+                .
+              </p>
             </CardContent>
           </Card>
         </div>

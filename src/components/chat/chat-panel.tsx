@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/lib/auth";
 import { listeners } from "@/lib/data/listeners";
 import { easeOutExpo } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,7 @@ export function ChatPanel({
   className?: string;
   onRequestClose?: () => void;
 }) {
+  const { user } = useAuth();
   const [stage, setStage] = React.useState<"intro" | "chatting">("intro");
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
@@ -94,6 +96,21 @@ export function ChatPanel({
   React.useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, typing]);
+
+  React.useEffect(() => {
+    if (!user || stage === "chatting") return;
+    setName(user.name);
+    setEmail(user.email);
+    setStage("chatting");
+    setMessages([
+      {
+        id: "greet",
+        author: "listener",
+        body: `Hi ${user.name.trim().split(" ")[0]} — I'm ${onShift.name.split(" ")[0]}, one of the listeners here. I'm reading as you type, so start wherever you like. There's no wrong opening.`,
+        sentAt: new Date(),
+      },
+    ]);
+  }, [user, stage]);
 
   // Any pending simulated reply must not fire after the panel closes.
   React.useEffect(() => {
@@ -222,7 +239,7 @@ export function ChatPanel({
           <Lock className="mt-0.5 size-3.5 shrink-0" />
           Encrypted, never recorded, and never used to train anything. This is not
           therapy or crisis support —{" "}
-          <Link href="/about#safety" className="underline underline-offset-2">
+          <Link href="/#safety" className="underline underline-offset-2">
             see our safety page
           </Link>
           .

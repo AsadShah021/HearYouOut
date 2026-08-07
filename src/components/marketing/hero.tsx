@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, MessageSquareText, ShieldCheck, Video } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
 import { HeroVisual } from "@/components/marketing/hero-visual";
@@ -23,7 +23,7 @@ export function Hero() {
         <Stagger className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <RevealItem>
             <Link
-              href="/chat"
+              href="/sign-up"
               className="glass group mb-8 inline-flex items-center gap-2.5 rounded-full py-1.5 pr-4 pl-1.5 text-xs font-medium"
             >
               <span className="bg-primary text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem]">
@@ -31,7 +31,7 @@ export function Hero() {
                 Online now
               </span>
               <span className="text-muted-foreground">
-                Chat with a real person — no appointment
+                Real people, not AI — create an account to talk
               </span>
               <ArrowRight className="text-muted-foreground size-3 transition-transform group-hover:translate-x-0.5" />
             </Link>
@@ -51,23 +51,20 @@ export function Hero() {
             <p className="text-muted-foreground mx-auto mt-7 max-w-2xl text-base leading-relaxed sm:text-lg">
               Whether it&rsquo;s your next startup, a difficult decision, or simply
               something on your mind — talk to a real person who listens without
-              judgment. Start a chat right now, or ask us for a voice or
-              face-to-face conversation.
+              judgment. Create a free account, then message us any time or
+              schedule a voice or face-to-face conversation.
             </p>
           </RevealItem>
 
           <RevealItem className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
             <Button asChild size="xl" variant="gradient" className="w-full sm:w-auto">
-              <Link href="/chat">
-                <MessageSquareText className="size-4" />
-                Start a chat now
+              <Link href="/sign-up">
+                Get started
+                <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button asChild size="xl" variant="outline" className="w-full sm:w-auto">
-              <Link href="/book?mode=meet-video">
-                <Video className="size-4" />
-                Request a Google Meet session
-              </Link>
+              <Link href="/sign-in">Log in</Link>
             </Button>
           </RevealItem>
 
@@ -111,7 +108,7 @@ export function Hero() {
           <p className="text-muted-foreground mx-auto max-w-2xl text-xs leading-relaxed">
             HearMeOut is a human connection service — not therapy, counseling, or
             mental health treatment.{" "}
-            <Link href="/about#safety" className="hover:text-foreground underline underline-offset-4">
+            <Link href="/#safety" className="hover:text-foreground underline underline-offset-4">
               Read what that means
             </Link>
             .

@@ -88,14 +88,14 @@ export function SiteFooter() {
               Terms
             </Link>
             <Link
-              href="/about#safety"
+              href="/#safety"
               className="text-muted-foreground hover:text-foreground text-xs transition-colors"
             >
               Safety
             </Link>
             <Button asChild variant="ghost" size="sm">
-              <Link href="/chat">
-                Start a chat <ArrowRight className="size-3.5" />
+              <Link href="/sign-up">
+                Get started <ArrowRight className="size-3.5" />
               </Link>
             </Button>
           </div>

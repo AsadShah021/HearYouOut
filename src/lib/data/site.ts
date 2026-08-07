@@ -96,54 +96,45 @@ export const requestableModes = sessionModes.filter(
   (mode) => mode.booking === "request",
 );
 
+/*
+ * Testing-phase navigation. Services, Our team, Pricing and About are parked —
+ * their pages live under app/(marketing) as `_services`, `_listeners`,
+ * `_pricing` and `_about`. To bring one back: drop the underscore from the
+ * folder name and restore its entry below.
+ */
 export const mainNav: NavItem[] = [
-  { label: "Services", href: "/services" },
-  { label: "Our team", href: "/listeners" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "About", href: "/about" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export const footerNav: { title: string; items: NavItem[] }[] = [
   {
-    title: "Talk to us",
+    title: "Get started",
     items: [
-      { label: "Start a chat", href: "/chat" },
-      { label: "Request a meeting", href: "/book" },
+      { label: "Create an account", href: "/sign-up" },
+      { label: "Log in", href: "/sign-in" },
       { label: "How it works", href: "/#how-it-works" },
-      { label: "Services", href: "/services" },
-      { label: "Pricing", href: "/pricing" },
     ],
   },
   {
     title: "Company",
     items: [
-      { label: "About us", href: "/about" },
-      { label: "Meet the team", href: "/listeners" },
-      { label: "How we listen", href: "/about#standards" },
+      { label: "FAQ", href: "/#faq" },
       { label: "Contact", href: `mailto:${site.email}` },
-    ],
-  },
-  {
-    title: "Account",
-    items: [
-      { label: "Sign in", href: "/sign-in" },
-      { label: "Create account", href: "/sign-up" },
-      { label: "Member dashboard", href: "/dashboard" },
-      { label: "Team dashboard", href: "/listener" },
     ],
   },
   {
     title: "Resources",
     items: [
-      { label: "FAQ", href: "/#faq" },
       { label: "Privacy policy", href: "/privacy" },
       { label: "Terms of service", href: "/terms" },
-      { label: "Safety & crisis resources", href: "/about#safety" },
+      { label: "Safety & crisis resources", href: "/#safety" },
     ],
   },
 ];
 
+/** Post-login actions — both require an account. */
 export const quickActions: NavItem[] = [
-  { label: "Start a chat", href: "/chat", icon: MessageSquareText },
-  { label: "Request a meeting", href: "/book", icon: CalendarClock },
+  { label: "Send a message", href: "/chat", icon: MessageSquareText },
+  { label: "Schedule a meeting", href: "/book", icon: CalendarClock },
 ];

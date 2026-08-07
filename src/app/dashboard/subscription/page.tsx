@@ -149,7 +149,7 @@ export default function SubscriptionPage() {
                 {current ? (
                   <span>Your plan</span>
                 ) : (
-                  <Link href="/pricing">
+                  <Link href="/book">
                     {item.priceMonthly > plan.priceMonthly ? "Upgrade" : "Downgrade"}
                   </Link>
                 )}

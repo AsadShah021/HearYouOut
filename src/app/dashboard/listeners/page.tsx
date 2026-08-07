@@ -18,8 +18,8 @@ export default function FavouriteListenersPage() {
         badge={`${favourites.length} saved`}
         actions={
           <Button asChild variant="outline">
-            <Link href="/listeners">
-              Meet the team <ArrowRight className="size-4" />
+            <Link href="/book">
+              Request a meeting <ArrowRight className="size-4" />
             </Link>
           </Button>
         }

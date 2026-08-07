@@ -30,7 +30,7 @@ export function BoundaryNotice({
         <span>
           We listen — we don&rsquo;t diagnose or treat. If you&rsquo;re at risk of
           harm,{" "}
-          <Link href="/about#safety" className="text-foreground underline underline-offset-2">
+          <Link href="/#safety" className="text-foreground underline underline-offset-2">
             get help now
           </Link>
           .
@@ -72,7 +72,7 @@ export function BoundaryNotice({
             a reply here.
           </p>
           <Link
-            href="/about#safety"
+            href="/#safety"
             className="text-foreground hover:text-primary mt-4 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 transition-colors"
           >
             <LifeBuoy className="size-3.5" />

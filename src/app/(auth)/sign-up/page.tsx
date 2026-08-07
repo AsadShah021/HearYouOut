@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { AuthForm } from "@/components/auth/auth-form";
 import { createMetadata } from "@/lib/seo";
 
@@ -9,5 +11,9 @@ export const metadata = createMetadata({
 });
 
 export default function SignUpPage() {
-  return <AuthForm mode="sign-up" />;
+  return (
+    <Suspense fallback={<div className="h-96" />}>
+      <AuthForm mode="sign-up" />
+    </Suspense>
+  );
 }

@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { ArrowUpRight, LogOut, Settings2 } from "lucide-react";
 
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
+import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,8 @@ export function AppSidebar({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { signOut } = useAuth();
 
   const isActive = (item: SidebarItem) =>
     item.exact ? pathname === item.href : pathname.startsWith(item.href);
@@ -110,10 +113,17 @@ export function AppSidebar({
             <Settings2 />
           </Link>
         </Button>
-        <Button asChild size="icon-sm" variant="ghost" aria-label="Sign out">
-          <Link href="/">
-            <LogOut />
-          </Link>
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          aria-label="Sign out"
+          onClick={() => {
+            signOut();
+            router.push("/");
+            router.refresh();
+          }}
+        >
+          <LogOut />
         </Button>
       </div>
     </div>

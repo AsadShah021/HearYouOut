@@ -1,4 +1,3 @@
-import { ChatWidget } from "@/components/chat/chat-widget";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 
@@ -12,7 +11,6 @@ export default function MarketingLayout({
         {children}
       </main>
       <SiteFooter />
-      <ChatWidget />
     </div>
   );
 }

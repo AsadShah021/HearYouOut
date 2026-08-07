@@ -88,7 +88,7 @@ export function NotTherapy() {
             If you are in crisis or need clinical care, please contact a licensed
             provider or your local emergency services.{" "}
             <Link
-              href="/about#safety"
+              href="/#safety"
               className="text-foreground font-medium underline underline-offset-4"
             >
               See our safety resources

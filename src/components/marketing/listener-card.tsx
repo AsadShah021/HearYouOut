@@ -45,7 +45,7 @@ export function ListenerCard({
           <div className="flex items-center gap-1.5">
             <h3 className="truncate text-[0.975rem] font-semibold">
               <Link
-                href={`/listeners/${listener.slug}`}
+                href="/book"
                 className="after:absolute after:inset-0 hover:underline underline-offset-4"
               >
                 {listener.name}
@@ -109,7 +109,7 @@ export function ListenerCard({
           {listener.nextAvailable}
         </span>
         <Button asChild size="sm" variant="subtle" className="relative z-10">
-          <Link href={`/listeners/${listener.slug}`}>View profile</Link>
+          <Link href="/book">Request a meeting</Link>
         </Button>
       </div>
     </article>

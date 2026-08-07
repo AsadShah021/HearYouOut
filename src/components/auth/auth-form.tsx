@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/lib/auth";
 import { easeOutExpo } from "@/lib/motion";
 
 /** Inline provider marks — no external requests, and they theme correctly. */
@@ -49,14 +50,23 @@ type Mode = "sign-in" | "sign-up" | "forgot";
 
 export function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { signIn, signUp } = useAuth();
+  // Where middleware wanted them to land before it bounced them here.
+  const next = searchParams.get("next") || "/dashboard";
   const [loading, setLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [sent, setSent] = React.useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "").trim();
+    const name = String(form.get("name") ?? "").trim();
+
     setLoading(true);
-    // Front-end only: replace with your auth provider's call.
+    // Front-end only: replace with your auth provider's call. Nothing is
+    // verified — whatever is typed becomes the session.
     await new Promise((resolve) => setTimeout(resolve, 900));
     setLoading(false);
 
@@ -68,8 +78,15 @@ export function AuthForm({ mode }: { mode: Mode }) {
       return;
     }
 
-    toast.success(mode === "sign-up" ? "Welcome to HearMeOut" : "Welcome back");
-    router.push("/dashboard");
+    const account = { name: name || email.split("@")[0], email };
+    if (mode === "sign-up") signUp(account);
+    else signIn(account);
+
+    toast.success(mode === "sign-up" ? "Welcome to HearMeOut" : "Welcome back", {
+      description: "You can message us or schedule a meeting from your dashboard.",
+    });
+    router.push(next);
+    router.refresh();
   }
 
   if (mode === "forgot" && sent) {
@@ -118,14 +135,24 @@ export function AuthForm({ mode }: { mode: Mode }) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => toast.info("Connect your OAuth provider to enable this.")}
+              onClick={() => {
+                signIn({ name: "Demo User", email: "demo@example.com" });
+                toast.success("Signed in with Google (demo)");
+                router.push(next);
+                router.refresh();
+              }}
             >
               <GoogleMark /> Google
             </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => toast.info("Connect your OAuth provider to enable this.")}
+              onClick={() => {
+                signIn({ name: "Demo User", email: "demo@example.com" });
+                toast.success("Signed in with Apple (demo)");
+                router.push(next);
+                router.refresh();
+              }}
             >
               <AppleMark /> Apple
             </Button>

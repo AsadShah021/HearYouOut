@@ -53,6 +53,11 @@ export const testimonials: Testimonial[] = [
   },
 ];
 
+/*
+ * Testing-phase FAQ. Questions about pricing, favourite listeners, feedback
+ * mode, anonymous mode and standing check-ins are parked with the features they
+ * describe — restore them here when those come back.
+ */
 export const faqs: Faq[] = [
   {
     question: "Is this therapy?",
@@ -63,7 +68,7 @@ export const faqs: Faq[] = [
   {
     question: "Who exactly am I talking to?",
     answer:
-      "Us. HearMeOut is a small in-house team of trained listeners — never AI, and never freelancers we've never met. Everyone on the team is named and introduced on our team page, so you know who you're speaking to before you speak to them. We don't run a marketplace and we're not recruiting: the people you see are the people you get.",
+      "Us. HearMeOut is a small in-house team of trained listeners — never AI, and never freelancers we've never met. We don't run a marketplace and we're not recruiting: the same few people answer every chat and every meeting.",
     category: "basics",
   },
   {
@@ -75,37 +80,13 @@ export const faqs: Faq[] = [
   {
     question: "How do I get a voice or video meeting?",
     answer:
-      `You send us a request rather than picking a slot from a calendar. Tell us the format you'd like, roughly when you're free, and what you'd like to talk about. We're notified straight away, we find the person on the team who fits best, and we email you a confirmed time with a calendar invitation — usually within ${site.requestResponseTime}. We do it this way on purpose: a real person reads every request, so you're matched thoughtfully rather than by whoever happens to have a gap.`,
+      `You send us a short request rather than picking a slot from a calendar — your name, your email, and what you'd like to talk about. We're notified straight away, a real person reads it, and we email you to agree a time that suits you, usually within ${site.requestResponseTime}. We do it this way on purpose: you get matched thoughtfully rather than by whoever happens to have a gap.`,
     category: "sessions",
   },
   {
     question: "How do Google Meet sessions work?",
     answer:
-      "Once we confirm your requested time, we generate the Google Meet link and send a calendar invitation to you and your listener. The same link appears on your dashboard, and a Join button becomes active ten minutes before the start time. You don't need a Google account to join — the link works in any modern browser, and your camera is always optional.",
-    category: "sessions",
-  },
-  {
-    question: "Can I ask for the same listener every time?",
-    answer:
-      "Absolutely, and most members do. Name someone in your request and we'll schedule with them whenever they're free. Add anyone to your favourites to make that the default, and on Premium you can nominate a dedicated listener who holds recurring time for you and keeps the thread of your ongoing conversations.",
-    category: "sessions",
-  },
-  {
-    question: "Will you tell me what you actually think?",
-    answer:
-      "Only if you ask. Our default is listening without advising — most people arrive with plenty of opinions already and nowhere to think. But on some conversations, like creative work or planning an exit, you can switch on feedback mode when you send your request. Your listener will then hear you out in full first, and give you their honest opinion at the end rather than steering you throughout. You can turn it off again any time.",
-    category: "sessions",
-  },
-  {
-    question: "Can I talk about something without giving my name?",
-    answer:
-      "Yes, on our more personal conversations — regret and guilt, loneliness, comparison. Tick 'keep this anonymous' when you request one and your name is hidden from everyone except the listener taking your session. It never appears in our queue, our notes, or anything we report on. We still need an email address to send you the confirmed time, and you're welcome to use one that isn't tied to your real name.",
-    category: "privacy",
-  },
-  {
-    question: "What is a standing check-in?",
-    answer:
-      "A recurring 15-minute call with the same listener, at the same time each week or fortnight. You say what you meant to do, what actually happened, and what's next. There is no lecture when you miss a week — the point isn't pressure, it's that someone is expecting you and remembers what you said last time. Request it like any other session and tell us which cadence you want.",
+      "Once we've agreed a time, we generate the Google Meet link and send a calendar invitation to you and your listener. You don't need a Google account to join — the link works in any modern browser, and your camera is always optional.",
     category: "sessions",
   },
   {
@@ -114,23 +95,11 @@ export const faqs: Faq[] = [
       "Yes. Chats are encrypted in transit and at rest, and only you and the listener replying can read them. We never sell data, never train models on your conversations, and never share anything with employers, insurers, or advertisers. Live sessions are not recorded. Notes are written only if you ask for them, and you can delete any note — or your whole account and history — at any time.",
     category: "privacy",
   },
-  {
-    question: "How does the subscription work?",
-    answer:
-      "You pick a plan and receive a set number of live sessions each month — 2 on Starter, 6 on Professional, unlimited on Premium — plus chat according to your plan. Your allowance resets on your billing date, and a session is only counted once we've confirmed a time and it has taken place. Unused Starter and Professional sessions roll over for one month, so a quiet month is never wasted.",
-    category: "billing",
-  },
-  {
-    question: "Can I cancel anytime?",
-    answer:
-      "Yes. Cancel in one click from your subscription settings — no phone call, no retention flow, no cancellation fee. You keep access until the end of the period you've already paid for, and you can export your notes, ideas, and conversation history on the way out.",
-    category: "billing",
-  },
 ];
 
 /**
- * Derived from the real team rather than invented, so the marketing numbers and
- * the team page can never contradict each other.
+ * Derived from the real team rather than invented, so the marketing numbers can
+ * never contradict the team behind them.
  */
 const totalSessions = listeners.reduce((sum, l) => sum + l.sessions, 0);
 const totalReviews = listeners.reduce((sum, l) => sum + l.reviews, 0);
@@ -155,5 +124,5 @@ export const trustPoints = [
   "Real people, never AI",
   "Chat replies in minutes",
   "End-to-end encrypted",
-  "Cancel anytime",
+  "Nothing recorded",
 ];

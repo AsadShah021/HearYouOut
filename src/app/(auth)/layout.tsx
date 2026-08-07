@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Quote, ShieldCheck } from "lucide-react";
 
-import { Logo } from "@/components/brand/logo";
+import { Logo, LogoMark } from "@/components/brand/logo";
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
 import { ThemeToggle } from "@/components/brand/theme-toggle";
 import { AuroraBackdrop } from "@/components/motion/aurora-backdrop";
@@ -64,7 +64,7 @@ export default function AuthLayout({
           >
             <ArrowLeft className="size-4" />
             <span className="lg:hidden">
-              <Logo showWordmark={false} />
+              <LogoMark className="size-6" />
             </span>
             <span className="hidden lg:inline">Back to site</span>
           </Link>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Inter } from "next/font/google";
 
 import { MotionProvider } from "@/components/brand/motion-provider";
+import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/components/brand/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
@@ -85,6 +86,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <MotionProvider>
+            <AuthProvider>
             <TooltipProvider>
               <a
                 href="#main"
@@ -95,6 +97,7 @@ export default function RootLayout({
               {children}
               <Toaster />
             </TooltipProvider>
+          </AuthProvider>
           </MotionProvider>
         </ThemeProvider>
       </body>
