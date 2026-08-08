@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.log
+
+# Secrets — the example file is committed, the real one never is.
+.env
+.env.*
+!.env.example
+
+# Generated Prisma client
+/generated
+
+/src/generated/

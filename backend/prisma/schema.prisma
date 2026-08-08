@@ -1,0 +1,180 @@
+// SnugTalk — database schema
+//
+// Scoped to what the frontend actually does today: accounts, the meeting
+// request form, and chat. Tables for the parked features (services, plans,
+// subscriptions, notes, ideas, reviews, availability) are listed at the bottom
+// as comments — add them when those features come back, not before.
+//
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// Prisma 7 no longer accepts `url` here — the connection string lives in
+// prisma.config.ts, and the runtime client gets it via a driver adapter.
+datasource db {
+  provider = "mysql"
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                   Users                                    */
+/* -------------------------------------------------------------------------- */
+
+enum Role {
+  MEMBER
+  LISTENER
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String   @db.VarChar(120)
+  // 191 chars, not 255: a utf8mb4 index key is 4 bytes per char, and older
+  // MySQL/InnoDB caps index keys at 767 bytes. 191 is always safe.
+  email        String   @unique @db.VarChar(191)
+  passwordHash String   @db.VarChar(255)
+  role         Role     @default(MEMBER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  listenerProfile       ListenerProfile?
+  requests              MeetingRequest[] @relation("Requester")
+  assignedRequests      MeetingRequest[] @relation("AssignedListener")
+  conversations         Conversation[]   @relation("Member")
+  assignedConversations Conversation[]   @relation("ConversationListener")
+  messages              Message[]
+
+  @@map("users")
+}
+
+/// One-to-one extension of User for role = LISTENER.
+model ListenerProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug      String   @unique @db.VarChar(120)
+  headline  String   @db.VarChar(200)
+  bio       String   @db.Text
+  avatarUrl String?  @db.VarChar(500)
+  location  String?  @db.VarChar(120)
+  timezone  String   @db.VarChar(60)
+  // JSON is fine while the public directory is parked. If you bring back
+  // filtering by specialty, promote these to their own tables so they can be
+  // indexed — you cannot efficiently query inside a JSON column.
+  languages   Json
+  specialties Json
+  isOnShift   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("listener_profiles")
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Meeting requests                              */
+/* -------------------------------------------------------------------------- */
+
+enum RequestStatus {
+  NEW
+  REVIEWING
+  SCHEDULED
+  DECLINED
+}
+
+/// Submitted by the /book form. A person reads it and agrees a time by email.
+model MeetingRequest {
+  id        String @id @default(cuid())
+  /// Human-quotable id shown to the member, e.g. "SNG-8241".
+  reference String @unique @db.VarChar(20)
+
+  // Kept even if the account is later deleted, so the team's queue history
+  // stays intact — hence SetNull rather than Cascade.
+  userId String?
+  user   User?   @relation("Requester", fields: [userId], references: [id], onDelete: SetNull)
+
+  /// Copied at submit time so the request still reads correctly if the user
+  /// later changes their name or email.
+  name  String @db.VarChar(120)
+  email String @db.VarChar(191)
+  topic String @db.Text
+
+  status             RequestStatus @default(NEW)
+  assignedListenerId String?
+  assignedListener   User?         @relation("AssignedListener", fields: [assignedListenerId], references: [id], onDelete: SetNull)
+  scheduledFor       DateTime?
+  meetUrl            String?       @db.VarChar(500)
+  internalNote       String?       @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // The queue is always "open requests, oldest first".
+  @@index([status, createdAt])
+  @@index([userId])
+  @@map("meeting_requests")
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                    Chat                                    */
+/* -------------------------------------------------------------------------- */
+
+enum ConversationStatus {
+  WAITING
+  ACTIVE
+  CLOSED
+}
+
+model Conversation {
+  id       String @id @default(cuid())
+  memberId String
+  member   User   @relation("Member", fields: [memberId], references: [id], onDelete: Cascade)
+
+  assignedListenerId String?
+  assignedListener   User?   @relation("ConversationListener", fields: [assignedListenerId], references: [id], onDelete: SetNull)
+
+  status ConversationStatus @default(WAITING)
+  /// Denormalised so the inbox can sort without touching the messages table.
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  messages Message[]
+
+  @@index([status, lastMessageAt])
+  @@index([memberId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  body      String    @db.Text
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            Parked — add later                              */
+/* -------------------------------------------------------------------------- */
+//
+// services            slug, title, summary, description, group, flags
+// plans               name, price_monthly, price_yearly, sessions_per_month
+// subscriptions       user_id, plan_id, status, current_period_end
+// sessions            request_id, listener_id, starts_at, duration, meet_url
+// notes               session_id, author_id, title, body
+// ideas               user_id, title, summary, stage, confidence
+// reviews             session_id, listener_id, rating, body
+// availability        listener_id, weekday, start_time, end_time
+//
+// Add each one when its feature is unparked. An unused table is a schema you
+// have to migrate around for no benefit.
