@@ -14,15 +14,15 @@ but `next build` is memory-hungry and 8 GB saves you fighting it.
 This is the important decision, and it isn't just tidiness.
 
 ```
-https://snugtalk.com/          →  nginx  →  Next.js  (127.0.0.1:3000)
-https://snugtalk.com/api/...   →  nginx  →  Express  (127.0.0.1:4000)
+https://snugtalk.tech/          →  nginx  →  Next.js  (127.0.0.1:3000)
+https://snugtalk.tech/api/...   →  nginx  →  Express  (127.0.0.1:4000)
 ```
 
-**Do not put the API on `api.snugtalk.com`.** The session is an httpOnly
+**Do not put the API on `api.snugtalk.tech`.** The session is an httpOnly
 cookie set by the API. On a subdomain it becomes *host-only* — the browser
-sends it to `api.snugtalk.com` and nowhere else. The Next.js middleware runs on
-`snugtalk.com`, wouldn't see it, and would bounce every signed-in user back to
-`/sign-in`. You'd then be reaching for `domain=.snugtalk.com` and
+sends it to `api.snugtalk.tech` and nowhere else. The Next.js middleware runs on
+`snugtalk.tech`, wouldn't see it, and would bounce every signed-in user back to
+`/sign-in`. You'd then be reaching for `domain=.snugtalk.tech` and
 `SameSite=None`, which is more configuration and a weaker cookie.
 
 Same-origin removes the problem entirely, and CORS stops mattering too.
@@ -103,7 +103,7 @@ JWT_SECRET="<64 hex chars — generate a NEW one, never reuse the dev value>"
 JWT_EXPIRES_IN="7d"
 PORT=4000
 NODE_ENV=production
-CORS_ORIGIN="https://snugtalk.com"
+CORS_ORIGIN="https://snugtalk.tech"
 ```
 
 ```bash
@@ -118,7 +118,12 @@ sees the real client IP through nginx instead of rate-limiting nginx itself.
 
 ```
 NEXT_PUBLIC_API_URL=
+NEXT_PUBLIC_SITE_URL=https://snugtalk.tech
 ```
+
+`NEXT_PUBLIC_SITE_URL` is the canonical origin used for metadata, OG tags and
+the sitemap. **Moving to snugtalk.com later is this one line**, plus the nginx
+`server_name` and a fresh Certbot run — no code changes.
 
 Deliberately empty. The API client falls back to relative URLs, so the browser
 calls `/api/...` on the same origin. No CORS, no cookie-domain problem.
@@ -133,7 +138,7 @@ module.exports = {
     {
       name: "snugtalk-api",
       cwd: "/var/www/snugtalk/backend",
-      script: "dist/server.js",
+      script: "dist/src/server.js",   // tsc keeps the src/ prefix
       env: { NODE_ENV: "production" },
       max_memory_restart: "400M",
     },
@@ -162,7 +167,7 @@ pm2 startup        # run the command it prints, so both survive a reboot
 ```nginx
 server {
     listen 80;
-    server_name snugtalk.com www.snugtalk.com;
+    server_name snugtalk.tech www.snugtalk.tech;
 
     client_max_body_size 2m;
 
@@ -206,7 +211,7 @@ to resolve, then:
 
 ```bash
 sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d snugtalk.com -d www.snugtalk.com
+sudo certbot --nginx -d snugtalk.tech -d www.snugtalk.tech
 ```
 
 Certbot rewrites the nginx config for TLS and installs a renewal timer.

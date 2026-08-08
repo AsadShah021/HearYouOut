@@ -13,7 +13,12 @@ export const site = {
   tagline: "Everyone deserves someone who truly listens.",
   description:
     "SnugTalk is a small team of trained listeners. Chat with us now, or request a voice or Google Meet conversation and we'll confirm a time. Not therapy — real people who listen.",
-  url: "https://snugtalk.com",
+  /**
+   * Canonical origin, used for metadata, OG tags and the sitemap. Set
+   * NEXT_PUBLIC_SITE_URL to move domains without touching code — the default
+   * is the staging domain we launched on.
+   */
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://snugtalk.tech",
   locale: "en_US",
   email: "hello@snugtalk.com",
   twitter: "@snugtalk",
