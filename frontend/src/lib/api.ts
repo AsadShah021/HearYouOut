@@ -197,8 +197,17 @@ export interface AdminUserDetail extends AdminUserRow {
     id: string;
     status: "WAITING" | "ACTIVE" | "CLOSED";
     lastMessageAt: string;
+    assignedListener: { id: string; name: string } | null;
     _count: { messages: number };
   }[];
+}
+
+/** Staff who can be assigned to a member. */
+export interface AdminListener {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
 }
 
 /** What `/api/auth/me` returns while an admin is impersonating. */

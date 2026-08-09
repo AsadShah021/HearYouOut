@@ -170,6 +170,7 @@ adminRoutes.get("/users/:id", async (req, res) => {
           id: true,
           status: true,
           lastMessageAt: true,
+          assignedListener: { select: { id: true, name: true } },
           _count: { select: { messages: true } },
         },
       },
@@ -219,6 +220,74 @@ adminRoutes.patch("/users/:id", async (req, res) => {
   });
 
   res.json({ user });
+});
+
+/* ------------------------------ Assignment ------------------------------- */
+
+/** Everyone who can take a conversation, for the assignment dropdown. */
+adminRoutes.get("/listeners", async (_req, res) => {
+  const listeners = await prisma.user.findMany({
+    where: { role: { in: ["LISTENER", "ADMIN"] } },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, email: true, role: true },
+  });
+  res.json({ listeners });
+});
+
+const assignBody = z.object({
+  /** null unassigns, returning the thread to the shared queue. */
+  listenerId: z.string().min(1).nullable(),
+});
+
+/**
+ * Give a member a named listener.
+ *
+ * The member's conversation is created here if they've never opened chat, so an
+ * admin can set up continuity before the person writes their first message —
+ * which is the point: they should meet the same person every time, not whoever
+ * happens to be free.
+ */
+adminRoutes.patch("/users/:id/listener", async (req, res) => {
+  const { id } = idParam.parse(req.params);
+  const { listenerId } = assignBody.parse(req.body);
+
+  const member = await prisma.user.findUnique({ where: { id }, select: { id: true } });
+  if (!member) throw ApiError.notFound("No such user");
+
+  if (listenerId) {
+    const listener = await prisma.user.findUnique({
+      where: { id: listenerId },
+      select: { id: true, role: true },
+    });
+    if (!listener || listener.role === "MEMBER") {
+      throw ApiError.badRequest("That person isn't a listener");
+    }
+  }
+
+  let conversation = await prisma.conversation.findFirst({
+    where: { memberId: id },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+
+  if (!conversation) {
+    conversation = await prisma.conversation.create({
+      data: { memberId: id },
+      select: { id: true },
+    });
+  }
+
+  const updated = await prisma.conversation.update({
+    where: { id: conversation.id },
+    data: { assignedListenerId: listenerId },
+    select: {
+      id: true,
+      status: true,
+      assignedListener: { select: { id: true, name: true, email: true } },
+    },
+  });
+
+  res.json({ conversation: updated });
 });
 
 /**

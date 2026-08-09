@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { api, ApiError, type ApiConversation, type ApiMessage } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { easeOutExpo } from "@/lib/motion";
 import { cn, formatDate, formatRelativeDay } from "@/lib/utils";
 
@@ -28,7 +29,11 @@ const quickReplies = [
   "Take your time. I'm not going anywhere.",
 ];
 
+type Scope = "mine" | "unassigned" | "all";
+
 export function TeamChatInbox() {
+  const { user: me } = useAuth();
+  const [scope, setScope] = React.useState<Scope>("all");
   const [conversations, setConversations] = React.useState<ApiConversation[]>([]);
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [messages, setMessages] = React.useState<ApiMessage[]>([]);
@@ -37,7 +42,18 @@ export function TeamChatInbox() {
   const [sending, setSending] = React.useState(false);
   const endRef = React.useRef<HTMLDivElement>(null);
 
+  // Filtering client-side: the inbox is capped at 100 threads, so this stays
+  // instant and avoids a round trip every time they flip tabs.
+  const visible = conversations.filter((c) =>
+    scope === "mine"
+      ? c.assignedListener?.id === me?.id
+      : scope === "unassigned"
+        ? !c.assignedListener
+        : true,
+  );
+
   const active = conversations.find((c) => c.id === activeId) ?? null;
+  const mineCount = conversations.filter((c) => c.assignedListener?.id === me?.id).length;
 
   const loadInbox = React.useCallback(async () => {
     try {
@@ -145,13 +161,45 @@ export function TeamChatInbox() {
     <div className="border-border/70 bg-card grid h-[calc(100dvh-9.5rem)] overflow-hidden rounded-2xl border md:grid-cols-[20rem_1fr]">
       {/* Queue */}
       <div className="border-border/70 hidden flex-col border-r md:flex">
-        <div className="border-border/70 flex items-center justify-between gap-2 border-b px-4 py-3.5">
-          <p className="text-sm font-semibold">Inbox</p>
-          {waiting > 0 && <Badge variant="warning">{waiting} waiting</Badge>}
+        <div className="border-border/70 flex flex-col gap-2.5 border-b px-4 py-3.5">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold">Inbox</p>
+            {waiting > 0 && <Badge variant="warning">{waiting} waiting</Badge>}
+          </div>
+
+          <div className="bg-muted/70 inline-flex rounded-full p-0.5">
+            {([
+              ["mine", `Mine${mineCount ? ` (${mineCount})` : ""}`],
+              ["unassigned", "Unassigned"],
+              ["all", "All"],
+            ] as const).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setScope(value)}
+                className={cn(
+                  "focus-visible:ring-ring/50 h-7 flex-1 rounded-full px-2.5 text-[0.6875rem] font-medium transition-colors outline-none focus-visible:ring-[3px]",
+                  scope === value
+                    ? "bg-card text-foreground shadow-[0_1px_2px_rgba(16,16,32,0.06)]"
+                    : "text-muted-foreground",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {conversations.map((chat) => {
+          {visible.length === 0 && (
+            <p className="text-muted-foreground p-6 text-center text-xs leading-relaxed">
+              {scope === "mine"
+                ? "Nothing assigned to you yet. An admin can assign members to you from the users page."
+                : "No threads here."}
+            </p>
+          )}
+
+          {visible.map((chat) => {
             const selected = chat.id === activeId;
             const preview = chat.messages?.[0];
             return (
@@ -205,8 +253,14 @@ export function TeamChatInbox() {
               {active?.member.email}
             </p>
           </div>
-          {active?.assignedListener && (
-            <Badge variant="brand">{active.assignedListener.name.split(" ")[0]}</Badge>
+          {active?.assignedListener ? (
+            <Badge variant={active.assignedListener.id === me?.id ? "success" : "brand"}>
+              {active.assignedListener.id === me?.id
+                ? "Yours"
+                : active.assignedListener.name.split(" ")[0]}
+            </Badge>
+          ) : (
+            <Badge variant="muted">Unassigned</Badge>
           )}
         </header>
 

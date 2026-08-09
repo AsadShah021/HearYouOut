@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
 import { PageHeader } from "@/components/dashboard/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { AssignListener } from "@/components/dashboard/assign-listener";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -227,6 +228,9 @@ export default function AdminUserDetailPage() {
                     </Badge>
                     <span className="text-muted-foreground flex-1 text-xs">
                       {conversation._count.messages} messages
+                      {conversation.assignedListener
+                        ? ` · ${conversation.assignedListener.name}`
+                        : " · unassigned"}
                     </span>
                     <span className="text-muted-foreground text-xs">
                       {formatRelativeDay(conversation.lastMessageAt)}
@@ -345,6 +349,28 @@ export default function AdminUserDetailPage() {
               </p>
             </CardContent>
           </Card>
+
+          {user.role === "MEMBER" && (
+            <AssignListener
+              memberId={user.id}
+              memberName={user.name}
+              currentListenerId={user.conversations[0]?.assignedListener?.id ?? null}
+              onAssigned={(listener) =>
+                setUser((current) =>
+                  current
+                    ? {
+                        ...current,
+                        conversations: current.conversations.length
+                          ? current.conversations.map((c, i) =>
+                              i === 0 ? { ...c, assignedListener: listener } : c,
+                            )
+                          : current.conversations,
+                      }
+                    : current,
+                )
+              }
+            />
+          )}
 
           {!isSelf && (
             <Card className="border-destructive/25">
