@@ -44,7 +44,7 @@ const publicUser = {
   name: true,
   email: true,
   role: true,
-  emailVerifiedAt: true,
+  isVerified: true,
   createdAt: true,
 } as const;
 
@@ -102,20 +102,20 @@ authRoutes.post("/verify-email", requireAuth, otpLimiter, async (req, res) => {
     select: publicUser,
   });
   if (!user) throw ApiError.unauthorized();
-  if (user.emailVerifiedAt) return res.json({ user });
+  if (user.isVerified) return res.json({ user });
 
   await verifyEmailOtp(user.id, code);
 
-  res.json({ user: { ...user, emailVerifiedAt: new Date() } });
+  res.json({ user: { ...user, isVerified: true } });
 });
 
 authRoutes.post("/resend-code", requireAuth, otpLimiter, async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.id },
-    select: { id: true, name: true, email: true, emailVerifiedAt: true },
+    select: { id: true, name: true, email: true, isVerified: true },
   });
   if (!user) throw ApiError.unauthorized();
-  if (user.emailVerifiedAt) throw ApiError.badRequest("Your email is already verified");
+  if (user.isVerified) throw ApiError.badRequest("Your email is already verified");
 
   await issueEmailOtp(user);
   res.status(202).json({ sent: true });
@@ -138,10 +138,10 @@ authRoutes.post("/change-email", requireAuth, otpLimiter, async (req, res) => {
 
   const user = await prisma.user.findUnique({
     where: { id: req.user!.id },
-    select: { id: true, name: true, email: true, emailVerifiedAt: true },
+    select: { id: true, name: true, email: true, isVerified: true },
   });
   if (!user) throw ApiError.unauthorized();
-  if (user.emailVerifiedAt) {
+  if (user.isVerified) {
     throw ApiError.badRequest("Your email is already verified");
   }
 
@@ -179,7 +179,7 @@ authRoutes.post("/login", authLimiter, async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      emailVerifiedAt: user.emailVerifiedAt,
+      isVerified: user.isVerified,
       createdAt: user.createdAt,
     },
   });

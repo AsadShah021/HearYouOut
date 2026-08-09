@@ -41,7 +41,7 @@ export function UserRowActions({
 
   const isSelf = me?.id === user.id;
   const isAdmin = user.role === "ADMIN";
-  const unverified = !user.emailVerifiedAt;
+  const unverified = !user.isVerified;
 
   async function markVerified() {
     try {

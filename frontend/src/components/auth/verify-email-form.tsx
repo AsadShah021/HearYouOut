@@ -34,7 +34,7 @@ export function VerifyEmailForm() {
   React.useEffect(() => {
     if (!ready) return;
     if (!user) router.replace(`/sign-in?next=${encodeURIComponent(next)}`);
-    else if (user.emailVerifiedAt) router.replace(next);
+    else if (user.isVerified) router.replace(next);
   }, [ready, user, router, next]);
 
   React.useEffect(() => {

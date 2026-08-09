@@ -120,8 +120,8 @@ export interface ApiUser {
   name: string;
   email: string;
   role: Role;
-  /** Null until they've entered the emailed code. Google sign-ins arrive set. */
-  emailVerifiedAt: string | null;
+  /** 0 until they've entered the emailed code. Google sign-ins arrive as 1. */
+  isVerified: boolean;
   createdAt: string;
 }
 

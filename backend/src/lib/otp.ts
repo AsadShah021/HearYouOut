@@ -125,7 +125,7 @@ export async function verifyEmailOtp(userId: string, code: string): Promise<void
     }),
     prisma.user.update({
       where: { id: userId },
-      data: { emailVerifiedAt: new Date() },
+      data: { isVerified: true },
     }),
   ]);
 }

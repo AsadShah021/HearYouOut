@@ -100,7 +100,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
     // An unproven address can't reach anything useful, so send them to the code
     // screen rather than to a dashboard where every action would fail.
-    if (!user.emailVerifiedAt) {
+    if (!user.isVerified) {
       if (emailSent) {
         toast.success("Check your inbox", {
           description: `We sent a 6-digit code to ${user.email}.`,

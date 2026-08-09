@@ -17,7 +17,7 @@ const publicUser = {
   name: true,
   email: true,
   role: true,
-  emailVerifiedAt: true,
+  isVerified: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -238,14 +238,14 @@ adminRoutes.post("/users/:id/verify-email", async (req, res) => {
 
   const target = await prisma.user.findUnique({
     where: { id },
-    select: { id: true, email: true, emailVerifiedAt: true },
+    select: { id: true, email: true, isVerified: true },
   });
   if (!target) throw ApiError.notFound("No such user");
-  if (target.emailVerifiedAt) throw ApiError.badRequest("That email is already verified");
+  if (target.isVerified) throw ApiError.badRequest("That email is already verified");
 
   const user = await prisma.user.update({
     where: { id },
-    data: { emailVerifiedAt: new Date() },
+    data: { isVerified: true },
     select: publicUser,
   });
 

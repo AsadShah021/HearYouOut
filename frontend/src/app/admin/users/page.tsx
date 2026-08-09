@@ -163,7 +163,7 @@ export default function AdminUsersPage() {
                         <Badge variant={roleTone[user.role]}>{user.role}</Badge>
                         {/* These people are locked out until they enter a code —
                             worth spotting from the list, not the detail page. */}
-                        {!user.emailVerifiedAt && (
+                        {!user.isVerified && (
                           <Badge variant="warning">Unverified</Badge>
                         )}
                       </span>

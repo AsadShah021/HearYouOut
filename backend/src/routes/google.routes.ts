@@ -152,15 +152,15 @@ googleRoutes.get("/google/callback", async (req, res) => {
         passwordHash: await hashPassword(crypto.randomBytes(32).toString("hex")),
         // Google has already proven they control this address. Mailing them a
         // code to confirm what Google just confirmed is friction, not security.
-        emailVerifiedAt: new Date(),
+        isVerified: true,
       },
     });
-  } else if (!user.emailVerifiedAt) {
+  } else if (!user.isVerified) {
     // Signed up with a password, never entered the code, now arriving through
     // Google on the same address — that's the proof the code was waiting for.
     user = await prisma.user.update({
       where: { id: user.id },
-      data: { emailVerifiedAt: new Date() },
+      data: { isVerified: true },
     });
   }
 

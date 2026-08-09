@@ -36,10 +36,13 @@ model User {
   email        String   @unique @db.VarChar(191)
   passwordHash String   @db.VarChar(255)
   role         Role     @default(MEMBER)
-  /// Null until the address is proven. Google sign-ups are stamped immediately
-  /// — Google has already verified the address, so asking again is friction
-  /// with no security gain.
-  emailVerifiedAt DateTime?
+  /// 0 until they enter the emailed code, 1 once they have. Google sign-ups
+  /// arrive as 1 — Google has already proven the address, so asking again is
+  /// friction with no security gain.
+  ///
+  /// MySQL stores this as TINYINT(1), so it reads as a plain 0/1 in any
+  /// database client.
+  isVerified Boolean @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

@@ -45,11 +45,11 @@ export async function requireVerified(req: Request, _res: Response, next: NextFu
 
   const user = await prisma.user.findUnique({
     where: { id: req.user.id },
-    select: { emailVerifiedAt: true },
+    select: { isVerified: true },
   });
 
   if (!user) throw ApiError.unauthorized();
-  if (!user.emailVerifiedAt) {
+  if (!user.isVerified) {
     throw new ApiError(403, "Verify your email address to continue", "EMAIL_UNVERIFIED");
   }
 

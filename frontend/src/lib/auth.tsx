@@ -176,5 +176,5 @@ export function isStaff(user: SessionUser | null) {
 
 /** Signed in but still owing us a code — nothing gated will work yet. */
 export function needsVerification(user: SessionUser | null) {
-  return Boolean(user && !user.emailVerifiedAt);
+  return Boolean(user && !user.isVerified);
 }

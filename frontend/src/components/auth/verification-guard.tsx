@@ -24,7 +24,7 @@ export function VerificationGuard() {
   const router = useRouter();
 
   React.useEffect(() => {
-    if (!ready || !user || user.emailVerifiedAt) return;
+    if (!ready || !user || user.isVerified) return;
     if (!PROTECTED.some((route) => pathname.startsWith(route))) return;
 
     router.replace(`/verify-email?next=${encodeURIComponent(pathname)}`);
