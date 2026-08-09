@@ -45,6 +45,8 @@ model User {
   conversations         Conversation[]   @relation("Member")
   assignedConversations Conversation[]   @relation("ConversationListener")
   messages              Message[]
+  sentConnections     ConnectionRequest[] @relation("MemberConnections")
+  receivedConnections ConnectionRequest[] @relation("ListenerConnections")
 
   @@map("users")
 }
@@ -114,6 +116,48 @@ model MeetingRequest {
   @@index([status, createdAt])
   @@index([userId])
   @@map("meeting_requests")
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            Connection requests                             */
+/* -------------------------------------------------------------------------- */
+
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+/**
+ * A member asking a specific listener to be theirs.
+ *
+ * Accepting assigns that listener to the member's conversation, so replies come
+ * from a known person rather than whoever is free. Declining is deliberately a
+ * first-class outcome: a listener who is at capacity, or who isn't the right
+ * fit, should be able to say so without it being a failure.
+ */
+model ConnectionRequest {
+  id String @id @default(cuid())
+
+  memberId String
+  member   User   @relation("MemberConnections", fields: [memberId], references: [id], onDelete: Cascade)
+
+  listenerId String
+  listener   User   @relation("ListenerConnections", fields: [listenerId], references: [id], onDelete: Cascade)
+
+  status ConnectionStatus @default(PENDING)
+  /// Optional note from the member — why this listener, what they'd like to talk about.
+  message     String?   @db.Text
+  respondedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// One request per pair: asking again updates the existing row.
+  @@unique([memberId, listenerId])
+  @@index([listenerId, status])
+  @@index([memberId, status])
+  @@map("connection_requests")
 }
 
 /* -------------------------------------------------------------------------- */

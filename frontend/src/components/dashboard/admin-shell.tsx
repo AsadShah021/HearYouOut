@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Loader2,
   MessagesSquare,
+  UserRoundCheck,
   Users,
 } from "lucide-react";
 
@@ -82,7 +83,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     },
     {
       title: "Manage",
-      items: [{ label: "Users", href: "/admin/users", icon: Users }],
+      items: [
+        { label: "Users", href: "/admin/users", icon: Users },
+        { label: "Connection requests", href: "/admin/connections", icon: UserRoundCheck },
+      ],
     },
   ];
 

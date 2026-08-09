@@ -8,6 +8,7 @@ import { prisma } from "./lib/prisma.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
+import { connectionRoutes } from "./routes/connections.routes.js";
 import { conversationRoutes } from "./routes/conversations.routes.js";
 import { requestRoutes } from "./routes/requests.routes.js";
 
@@ -47,6 +48,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/conversations", conversationRoutes);
+app.use("/api/connections", connectionRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

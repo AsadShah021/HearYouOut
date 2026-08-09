@@ -10,6 +10,7 @@ import {
   MessagesSquare,
   NotebookPen,
   Star,
+  UserRoundCheck,
   Wallet,
 } from "lucide-react";
 
@@ -22,8 +23,9 @@ const sections = [
     title: "Needs you",
     items: [
       { label: "Overview", href: "/listener", icon: LayoutDashboard, exact: true },
-      { label: "Live chats", href: "/listener/chats", icon: MessagesSquare, badge: 2 },
-      { label: "Meeting requests", href: "/listener/requests", icon: Inbox, badge: 2 },
+      { label: "Live chats", href: "/listener/chats", icon: MessagesSquare },
+      { label: "Meeting requests", href: "/listener/requests", icon: Inbox },
+      { label: "Connection requests", href: "/listener/connections", icon: UserRoundCheck },
     ],
   },
   {

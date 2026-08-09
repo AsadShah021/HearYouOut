@@ -6,6 +6,7 @@ import {
   MessagesSquare,
   Settings,
   ShieldCheck,
+  UserRoundCheck,
 } from "lucide-react";
 
 import { AppShell } from "@/components/dashboard/app-shell";
@@ -23,6 +24,7 @@ const sections = [
       { label: "Overview", href: "/dashboard", icon: LayoutDashboard, exact: true },
       { label: "Messages", href: "/chat", icon: MessagesSquare },
       { label: "Meetings", href: "/dashboard/sessions", icon: CalendarDays },
+      { label: "Choose a listener", href: "/dashboard/listeners", icon: UserRoundCheck },
     ],
   },
   {

@@ -222,3 +222,32 @@ export interface Pagination {
   total: number;
   pages: number;
 }
+
+/* --------------------------- Connection requests -------------------------- */
+
+export type ConnectionStatus = "PENDING" | "ACCEPTED" | "DECLINED";
+
+export interface ListenerCard {
+  id: string;
+  name: string;
+  listenerProfile: {
+    headline: string;
+    bio: string;
+    timezone: string;
+    languages: string[];
+    specialties: string[];
+    isOnShift: boolean;
+  } | null;
+  /** The signed-in member's existing request to this listener, if any. */
+  requestStatus: ConnectionStatus | null;
+}
+
+export interface ConnectionRequest {
+  id: string;
+  status: ConnectionStatus;
+  message: string | null;
+  createdAt: string;
+  respondedAt: string | null;
+  member: { id: string; name: string; email: string };
+  listener: { id: string; name: string };
+}
