@@ -9,18 +9,28 @@
 /**
  * Where the API lives.
  *
- * - **Unset** (local dev): the API runs on its own port.
- * - **Empty string** (production): same-origin. nginx proxies `/api/*` to the
- *   API on the same domain, which keeps the session cookie readable by both the
- *   Next middleware and the API, and removes CORS from the picture entirely.
  * - **A URL**: used as-is.
+ * - **Empty string**: same-origin — nginx proxies `/api/*` to the API on the
+ *   same domain, which keeps the session cookie readable by both the Next
+ *   middleware and the API, and removes CORS from the picture entirely.
+ * - **Unset**: same-origin in production, `localhost:4000` in development.
  *
- * Checked against `undefined` rather than falsiness, so an intentional empty
- * value means same-origin instead of silently falling back to localhost.
+ * The environment-dependent default matters. A production build with this var
+ * missing used to bake in `http://localhost:4000`, which points at *the
+ * visitor's own machine* — every request failed with a connection error, and
+ * nothing about the build warned us. Defaulting to same-origin in production
+ * makes the correct deployment shape the one you get for free.
+ *
+ * Compared against `undefined` rather than falsiness, so an intentional empty
+ * value still means same-origin.
  */
 const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL;
 const BASE_URL = (
-  configuredApiUrl === undefined ? "http://localhost:4000" : configuredApiUrl
+  configuredApiUrl !== undefined
+    ? configuredApiUrl
+    : process.env.NODE_ENV === "development"
+      ? "http://localhost:4000"
+      : ""
 ).replace(/\/$/, "");
 
 export interface FieldError {
