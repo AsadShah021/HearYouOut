@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Inter } from "next/font/google";
 
 import { MotionProvider } from "@/components/brand/motion-provider";
+import { VerificationGuard } from "@/components/auth/verification-guard";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/components/brand/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -94,6 +95,7 @@ export default function RootLayout({
               >
                 Skip to content
               </a>
+              <VerificationGuard />
               {children}
               <Toaster />
             </TooltipProvider>

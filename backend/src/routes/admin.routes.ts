@@ -17,6 +17,7 @@ const publicUser = {
   name: true,
   email: true,
   role: true,
+  emailVerifiedAt: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -218,6 +219,39 @@ adminRoutes.patch("/users/:id", async (req, res) => {
     data: { ...(name ? { name } : {}), ...(email ? { email } : {}), ...(role ? { role } : {}) },
     select: publicUser,
   });
+
+  res.json({ user });
+});
+
+/**
+ * Mark somebody's email verified by hand.
+ *
+ * The way out when email fails: a bounced code, a corporate mail filter, a
+ * typo'd address they've already told you about. Without this, an unverified
+ * account is a person locked out of the site with no route back in — and the
+ * only fix would be editing the database directly.
+ *
+ * It is a real bypass of the check, so it is admin-only and logged.
+ */
+adminRoutes.post("/users/:id/verify-email", async (req, res) => {
+  const { id } = idParam.parse(req.params);
+
+  const target = await prisma.user.findUnique({
+    where: { id },
+    select: { id: true, email: true, emailVerifiedAt: true },
+  });
+  if (!target) throw ApiError.notFound("No such user");
+  if (target.emailVerifiedAt) throw ApiError.badRequest("That email is already verified");
+
+  const user = await prisma.user.update({
+    where: { id },
+    data: { emailVerifiedAt: new Date() },
+    select: publicUser,
+  });
+
+  console.warn(
+    `[admin] ${req.user!.id} manually verified ${target.id} (${target.email}) at ${new Date().toISOString()}`,
+  );
 
   res.json({ user });
 });

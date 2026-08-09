@@ -3,11 +3,11 @@ import { z } from "zod";
 
 import { ApiError } from "../lib/errors.js";
 import { prisma } from "../lib/prisma.js";
-import { requireAuth, requireRole } from "../middleware/auth.js";
+import { requireAuth, requireRole, requireVerified } from "../middleware/auth.js";
 
 export const conversationRoutes = Router();
 
-conversationRoutes.use(requireAuth);
+conversationRoutes.use(requireAuth, requireVerified);
 
 const messageSelect = {
   id: true,

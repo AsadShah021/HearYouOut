@@ -28,4 +28,7 @@ export class ApiError extends Error {
   static conflict(message = "Already exists", code?: string) {
     return new ApiError(409, message, code);
   }
+  static tooManyRequests(message = "Too many attempts") {
+    return new ApiError(429, message, "RATE_LIMITED");
+  }
 }

@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 
 import { ApiError } from "../lib/errors.js";
+import { prisma } from "../lib/prisma.js";
 import { SESSION_COOKIE, verifyToken, type Role } from "../lib/auth.js";
 
 declare global {
@@ -26,6 +27,32 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
   if (!payload) throw ApiError.unauthorized("Session expired — please sign in again");
 
   req.user = { id: payload.sub, role: payload.role, impersonatedBy: payload.imp };
+  next();
+}
+
+/**
+ * Use after `requireAuth`. Blocks anyone who hasn't proven their email address.
+ *
+ * Checked against the database rather than the token: verifying must take
+ * effect immediately, and a token issued at signup would otherwise keep saying
+ * "unverified" until it expired.
+ *
+ * The `EMAIL_UNVERIFIED` code is what the frontend keys on to send them to the
+ * verify screen instead of showing a bare error.
+ */
+export async function requireVerified(req: Request, _res: Response, next: NextFunction) {
+  if (!req.user) throw ApiError.unauthorized();
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: { emailVerifiedAt: true },
+  });
+
+  if (!user) throw ApiError.unauthorized();
+  if (!user.emailVerifiedAt) {
+    throw new ApiError(403, "Verify your email address to continue", "EMAIL_UNVERIFIED");
+  }
+
   next();
 }
 

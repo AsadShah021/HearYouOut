@@ -127,7 +127,11 @@ googleRoutes.get("/google/callback", async (req, res) => {
 
   // An unverified address could belong to somebody else — refusing it is what
   // stops Google sign-in becoming a way to take over an existing account.
-  if (profile.email_verified === false) {
+  //
+  // Requiring `true` rather than merely rejecting `false`: an absent claim is
+  // not evidence of anything, and this assertion is the only reason a Google
+  // sign-up is allowed to skip the emailed code below.
+  if (profile.email_verified !== true) {
     return res.redirect(backToSignIn("Your Google email isn't verified"));
   }
 
@@ -146,7 +150,17 @@ googleRoutes.get("/google/callback", async (req, res) => {
         // No usable password: this account signs in through Google. A random
         // hash keeps the column non-null without matching anything typeable.
         passwordHash: await hashPassword(crypto.randomBytes(32).toString("hex")),
+        // Google has already proven they control this address. Mailing them a
+        // code to confirm what Google just confirmed is friction, not security.
+        emailVerifiedAt: new Date(),
       },
+    });
+  } else if (!user.emailVerifiedAt) {
+    // Signed up with a password, never entered the code, now arriving through
+    // Google on the same address — that's the proof the code was waiting for.
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerifiedAt: new Date() },
     });
   }
 

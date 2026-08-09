@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Eye, MailCheck, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -27,17 +27,34 @@ import { useAuth } from "@/lib/auth";
 export function UserRowActions({
   user,
   onDeleted,
+  onUpdated,
 }: {
   user: AdminUserRow;
   onDeleted: (id: string) => void;
+  onUpdated?: (user: AdminUserRow) => void;
 }) {
   const { user: me, refresh } = useAuth();
   const router = useRouter();
   const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [confirmImpersonate, setConfirmImpersonate] = React.useState(false);
+  const [confirmVerify, setConfirmVerify] = React.useState(false);
 
   const isSelf = me?.id === user.id;
   const isAdmin = user.role === "ADMIN";
+  const unverified = !user.emailVerifiedAt;
+
+  async function markVerified() {
+    try {
+      const { user: updated } = await api.post<{ user: AdminUserRow }>(
+        `/api/admin/users/${user.id}/verify-email`,
+      );
+      onUpdated?.({ ...user, ...updated });
+      toast.success(`${user.name} can now sign in`);
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Couldn't verify that.");
+      throw error;
+    }
+  }
 
   async function impersonate() {
     try {
@@ -90,6 +107,17 @@ export function UserRowActions({
             <Eye className="size-3.5" /> View as this user
           </DropdownMenuItem>
 
+          {unverified && (
+            <DropdownMenuItem
+              onSelect={(event) => {
+                event.preventDefault();
+                setConfirmVerify(true);
+              }}
+            >
+              <MailCheck className="size-3.5" /> Mark email verified
+            </DropdownMenuItem>
+          )}
+
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
@@ -118,6 +146,22 @@ export function UserRowActions({
         }
         confirmLabel="Start viewing as them"
         onConfirm={impersonate}
+      />
+
+      <ConfirmDialog
+        open={confirmVerify}
+        onOpenChange={setConfirmVerify}
+        title={`Mark ${user.name}'s email as verified?`}
+        description={`This skips the emailed code for ${user.email} and lets them straight into the site.`}
+        detail={
+          <>
+            Only do this when you know the address is really theirs — a bounced
+            code, a mail filter, or a typo they&rsquo;ve told you about. It is
+            logged.
+          </>
+        }
+        confirmLabel="Mark verified"
+        onConfirm={markVerified}
       />
 
       <ConfirmDialog

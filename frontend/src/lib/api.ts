@@ -56,6 +56,17 @@ export class ApiError extends Error {
   get isUnauthorized() {
     return this.status === 401;
   }
+
+  /**
+   * Signed in, but the email address hasn't been proven yet.
+   *
+   * Every gated endpoint answers this way, so a stale tab that was left open
+   * before verifying gets sent to the code screen rather than showing a
+   * meaningless "not allowed".
+   */
+  get needsEmailVerification() {
+    return this.status === 403 && this.code === "EMAIL_UNVERIFIED";
+  }
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -109,6 +120,8 @@ export interface ApiUser {
   name: string;
   email: string;
   role: Role;
+  /** Null until they've entered the emailed code. Google sign-ins arrive set. */
+  emailVerifiedAt: string | null;
   createdAt: string;
 }
 

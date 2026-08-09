@@ -31,6 +31,18 @@ const schema = z.object({
    */
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+
+  /**
+   * Transactional email, via Resend.
+   *
+   * Optional so local development doesn't need an API key — with it unset,
+   * codes are logged to the console instead of sent. That fallback is refused
+   * in production: silently not sending verification codes would lock every
+   * new signup out of the site.
+   */
+  RESEND_API_KEY: z.string().optional(),
+  /** Must be on a domain verified in Resend, or delivery fails. */
+  EMAIL_FROM: z.string().default("SnugTalk <hello@snugtalk.tech>"),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -54,4 +66,15 @@ export const env = {
   googleConfigured: Boolean(
     parsed.data.GOOGLE_CLIENT_ID && parsed.data.GOOGLE_CLIENT_SECRET,
   ),
+  emailConfigured: Boolean(parsed.data.RESEND_API_KEY),
 };
+
+// Verification codes are the only way into the site for a new account. Booting
+// production without a mail provider would turn every signup into a dead end,
+// so fail loudly here rather than at 3am in somebody's inbox.
+if (env.isProduction && !env.emailConfigured) {
+  console.error(
+    "\n✖ RESEND_API_KEY is required in production — without it, no signup can verify their email.\n",
+  );
+  process.exit(1);
+}

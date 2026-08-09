@@ -36,6 +36,10 @@ model User {
   email        String   @unique @db.VarChar(191)
   passwordHash String   @db.VarChar(255)
   role         Role     @default(MEMBER)
+  /// Null until the address is proven. Google sign-ups are stamped immediately
+  /// — Google has already verified the address, so asking again is friction
+  /// with no security gain.
+  emailVerifiedAt DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -47,8 +51,43 @@ model User {
   messages              Message[]
   sentConnections     ConnectionRequest[] @relation("MemberConnections")
   receivedConnections ConnectionRequest[] @relation("ListenerConnections")
+  emailOtps           EmailOtp[]
 
   @@map("users")
+}
+
+enum OtpPurpose {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+/**
+ * A one-time code sent to an email address.
+ *
+ * Only a hash of the code is stored. A six-digit code is worth very little on
+ * its own, but a database dump should never hand somebody a set of live codes
+ * they can type straight into the login form.
+ */
+model EmailOtp {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// SHA-256 of the code. Not bcrypt: the code is high-entropy-per-guess only
+  /// because of the attempt cap, and verification happens on a hot path.
+  codeHash String     @db.Char(64)
+  purpose  OtpPurpose
+
+  /// Counted server-side. Six digits is a million guesses — without a cap it
+  /// falls to a script in minutes.
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  /// Look-ups are always "the newest live code of this purpose for this user".
+  @@index([userId, purpose, consumedAt])
+  @@map("email_otps")
 }
 
 /// One-to-one extension of User for role = LISTENER.

@@ -3,11 +3,11 @@ import { z } from "zod";
 
 import { ApiError } from "../lib/errors.js";
 import { prisma } from "../lib/prisma.js";
-import { requireAuth, requireRole } from "../middleware/auth.js";
+import { requireAuth, requireRole, requireVerified } from "../middleware/auth.js";
 
 export const requestRoutes = Router();
 
-requestRoutes.use(requireAuth);
+requestRoutes.use(requireAuth, requireVerified);
 
 const createBody = z.object({
   name: z.string().trim().min(1, "Tell us your name").max(120),

@@ -159,7 +159,14 @@ export default function AdminUsersPage() {
                       </Link>
                     </td>
                     <td className="px-5 py-3.5">
-                      <Badge variant={roleTone[user.role]}>{user.role}</Badge>
+                      <span className="flex flex-wrap items-center gap-1.5">
+                        <Badge variant={roleTone[user.role]}>{user.role}</Badge>
+                        {/* These people are locked out until they enter a code —
+                            worth spotting from the list, not the detail page. */}
+                        {!user.emailVerifiedAt && (
+                          <Badge variant="warning">Unverified</Badge>
+                        )}
+                      </span>
                     </td>
                     <td className="text-muted-foreground px-5 py-3.5">
                       {user._count.requests}
@@ -179,6 +186,11 @@ export default function AdminUsersPage() {
                         user={user}
                         onDeleted={(id) =>
                           setUsers((current) => current.filter((u) => u.id !== id))
+                        }
+                        onUpdated={(updated) =>
+                          setUsers((current) =>
+                            current.map((u) => (u.id === updated.id ? updated : u)),
+                          )
                         }
                       />
                     </td>

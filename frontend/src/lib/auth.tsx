@@ -21,9 +21,18 @@ interface AuthValue {
   /** False until the first `/me` check resolves, so UI can avoid flicker. */
   ready: boolean;
   signIn: (email: string, password: string) => Promise<SessionUser>;
-  signUp: (name: string, email: string, password: string) => Promise<SessionUser>;
+  /** `emailSent` is false when the account exists but the code didn't go out. */
+  signUp: (
+    name: string,
+    email: string,
+    password: string,
+  ) => Promise<{ user: SessionUser; emailSent: boolean }>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
+  verifyEmail: (code: string) => Promise<void>;
+  resendCode: () => Promise<void>;
+  /** Fix a mistyped address. Only works before verifying. */
+  changeEmail: (email: string) => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthValue | null>(null);
@@ -69,16 +78,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = React.useCallback(
     async (name: string, email: string, password: string) => {
-      const { user: me } = await api.post<{ user: SessionUser }>("/api/auth/register", {
-        name,
-        email,
-        password,
-      });
+      const { user: me, emailSent } = await api.post<{
+        user: SessionUser;
+        emailSent: boolean;
+      }>("/api/auth/register", { name, email, password });
       setUser(me);
-      return me;
+      return { user: me, emailSent };
     },
     [],
   );
+
+  const verifyEmail = React.useCallback(async (code: string) => {
+    const { user: me } = await api.post<{ user: SessionUser }>(
+      "/api/auth/verify-email",
+      { code },
+    );
+    setUser(me);
+  }, []);
+
+  const resendCode = React.useCallback(async () => {
+    await api.post("/api/auth/resend-code");
+  }, []);
+
+  const changeEmail = React.useCallback(async (email: string) => {
+    await api.post("/api/auth/change-email", { email });
+    // The address on screen must match where the next code actually went.
+    setUser((current) => (current ? { ...current, email } : current));
+  }, []);
 
   const signOut = React.useCallback(async () => {
     try {
@@ -100,8 +126,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = React.useMemo<AuthValue>(
-    () => ({ user, impersonatedBy, ready, signIn, signUp, signOut, refresh, stopImpersonating }),
-    [user, impersonatedBy, ready, signIn, signUp, signOut, refresh, stopImpersonating],
+    () => ({
+      user,
+      impersonatedBy,
+      ready,
+      signIn,
+      signUp,
+      signOut,
+      refresh,
+      stopImpersonating,
+      verifyEmail,
+      resendCode,
+      changeEmail,
+    }),
+    [
+      user,
+      impersonatedBy,
+      ready,
+      signIn,
+      signUp,
+      signOut,
+      refresh,
+      stopImpersonating,
+      verifyEmail,
+      resendCode,
+      changeEmail,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -122,4 +172,9 @@ export function firstName(user: SessionUser | null) {
 /** Staff can see the team dashboards; members cannot. */
 export function isStaff(user: SessionUser | null) {
   return user?.role === "LISTENER" || user?.role === "ADMIN";
+}
+
+/** Signed in but still owing us a code — nothing gated will work yet. */
+export function needsVerification(user: SessionUser | null) {
+  return Boolean(user && !user.emailVerifiedAt);
 }

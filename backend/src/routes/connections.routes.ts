@@ -3,11 +3,11 @@ import { z } from "zod";
 
 import { ApiError } from "../lib/errors.js";
 import { prisma } from "../lib/prisma.js";
-import { requireAuth, requireRole } from "../middleware/auth.js";
+import { requireAuth, requireRole, requireVerified } from "../middleware/auth.js";
 
 export const connectionRoutes = Router();
 
-connectionRoutes.use(requireAuth);
+connectionRoutes.use(requireAuth, requireVerified);
 
 const listenerCard = {
   id: true,

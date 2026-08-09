@@ -77,9 +77,15 @@ export function AuthForm({ mode }: { mode: Mode }) {
       return;
     }
 
+    let user;
+    let emailSent = true;
+
     try {
-      if (mode === "sign-up") await signUp(name, email, password);
-      else await signIn(email, password);
+      if (mode === "sign-up") {
+        ({ user, emailSent } = await signUp(name, email, password));
+      } else {
+        user = await signIn(email, password);
+      }
     } catch (error) {
       setLoading(false);
       // The API returns a readable message for both "email taken" and
@@ -91,6 +97,24 @@ export function AuthForm({ mode }: { mode: Mode }) {
     }
 
     setLoading(false);
+
+    // An unproven address can't reach anything useful, so send them to the code
+    // screen rather than to a dashboard where every action would fail.
+    if (!user.emailVerifiedAt) {
+      if (emailSent) {
+        toast.success("Check your inbox", {
+          description: `We sent a 6-digit code to ${user.email}.`,
+        });
+      } else {
+        toast.error("We couldn't send your code", {
+          description: "Your account is ready — try again from the next screen.",
+        });
+      }
+      router.push(`/verify-email?next=${encodeURIComponent(next)}`);
+      router.refresh();
+      return;
+    }
+
     toast.success(mode === "sign-up" ? "Welcome to SnugTalk" : "Welcome back", {
       description: "You can message us or schedule a meeting from your dashboard.",
     });
