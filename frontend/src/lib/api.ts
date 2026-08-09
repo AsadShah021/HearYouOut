@@ -33,6 +33,9 @@ const BASE_URL = (
       : ""
 ).replace(/\/$/, "");
 
+/** Exposed for full-page redirects (OAuth), which can't go through `fetch`. */
+export const API_BASE = BASE_URL;
+
 export interface FieldError {
   path: string;
   message: string;

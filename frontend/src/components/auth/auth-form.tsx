@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { ApiError } from "@/lib/api";
+import { API_BASE, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { easeOutExpo } from "@/lib/motion";
 
@@ -39,14 +39,6 @@ function GoogleMark() {
   );
 }
 
-function AppleMark() {
-  return (
-    <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden>
-      <path d="M17.05 12.54c-.03-2.66 2.17-3.94 2.27-4-.24-.36-1.29-1.94-3.24-1.98-1.38-.14-2.7.81-3.4.81-.7 0-1.79-.79-2.94-.77-1.51.02-2.9.88-3.68 2.23-1.57 2.72-.4 6.75 1.12 8.96.74 1.08 1.63 2.29 2.79 2.25 1.12-.05 1.54-.72 2.9-.72s1.74.72 2.93.7c1.21-.02 1.97-1.1 2.71-2.18.85-1.25 1.2-2.46 1.22-2.52-.03-.01-2.34-.9-2.36-3.56-.02-2.22 1.81-3.28 1.89-3.33ZM14.8 4.6c.62-.75 1.03-1.79.92-2.83-.89.04-1.97.59-2.6 1.34-.57.66-1.07 1.72-.94 2.73.99.08 2-.5 2.62-1.24Z" />
-    </svg>
-  );
-}
-
 type Mode = "sign-in" | "sign-up" | "forgot";
 
 export function AuthForm({ mode }: { mode: Mode }) {
@@ -55,6 +47,12 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const { signIn, signUp } = useAuth();
   // Where middleware wanted them to land before it bounced them here.
   const next = searchParams.get("next") || "/dashboard";
+  const oauthError = searchParams.get("error");
+
+  // The Google callback redirects back with ?error=... when something failed.
+  React.useEffect(() => {
+    if (oauthError) toast.error(oauthError);
+  }, [oauthError]);
   const [loading, setLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [sent, setSent] = React.useState(false);
@@ -142,22 +140,13 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
       {mode !== "forgot" && (
         <>
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => toast.info("Connect an OAuth provider to enable this.")}
-            >
-              <GoogleMark /> Google
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => toast.info("Connect an OAuth provider to enable this.")}
-            >
-              <AppleMark /> Apple
-            </Button>
-          </div>
+          {/* A plain link, not a fetch: OAuth is a full-page redirect to
+              Google and back, so the browser has to navigate. */}
+          <Button asChild type="button" variant="outline" size="lg">
+            <a href={`${API_BASE}/api/auth/google`}>
+              <GoogleMark /> Continue with Google
+            </a>
+          </Button>
 
           <div className="relative">
             <Separator />

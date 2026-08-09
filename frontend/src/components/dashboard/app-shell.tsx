@@ -41,7 +41,9 @@ export function AppShell({
 
       <div className="flex min-h-dvh min-w-0 flex-col">
         {/* Top bar */}
-        <header className="glass sticky top-0 z-40 flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
+        {/* Opaque, not `.glass`. Dashboard content scrolls directly beneath this
+            bar, and a translucent one lets headings bleed through it. */}
+        <header className="bg-background border-border/70 sticky top-0 z-40 flex h-16 items-center gap-3 border-b px-4 sm:px-6 lg:px-8">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">

@@ -12,8 +12,12 @@ import {
 import { ApiError } from "../lib/errors.js";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
+import { googleRoutes } from "./google.routes.js";
 
 export const authRoutes = Router();
+
+// /api/auth/google and /api/auth/google/callback
+authRoutes.use(googleRoutes);
 
 /** Blunt brute-force protection on the endpoints worth attacking. */
 const authLimiter = rateLimit({

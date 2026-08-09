@@ -18,6 +18,19 @@ const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   /** Comma-separated list of origins allowed to send credentialed requests. */
   CORS_ORIGIN: z.string().default("http://localhost:3000"),
+
+  /**
+   * Public origin of the site, used to build the OAuth redirect URI and to send
+   * people back after signing in. Defaults to the first CORS origin.
+   */
+  APP_URL: z.string().url().optional(),
+
+  /**
+   * Google sign-in. Optional — leave unset and the Google routes return a clear
+   * "not configured" error rather than the server refusing to boot.
+   */
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -31,8 +44,14 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+const corsOrigins = parsed.data.CORS_ORIGIN.split(",").map((o) => o.trim());
+
 export const env = {
   ...parsed.data,
   isProduction: parsed.data.NODE_ENV === "production",
-  corsOrigins: parsed.data.CORS_ORIGIN.split(",").map((o) => o.trim()),
+  corsOrigins,
+  appUrl: (parsed.data.APP_URL ?? corsOrigins[0]!).replace(/\/$/, ""),
+  googleConfigured: Boolean(
+    parsed.data.GOOGLE_CLIENT_ID && parsed.data.GOOGLE_CLIENT_SECRET,
+  ),
 };
