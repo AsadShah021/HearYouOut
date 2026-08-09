@@ -88,7 +88,7 @@ npm run build
 **Frontend:**
 
 ```bash
-cd ../HearYouOut
+cd ../frontend
 npm ci
 npm run build
 ```
@@ -114,7 +114,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 only ever travels over HTTPS. It also switches `trust proxy` on so rate limiting
 sees the real client IP through nginx instead of rate-limiting nginx itself.
 
-`HearYouOut/.env.local`:
+`frontend/.env.local`:
 
 ```
 NEXT_PUBLIC_API_URL=
@@ -144,7 +144,7 @@ module.exports = {
     },
     {
       name: "snugtalk-web",
-      cwd: "/var/www/snugtalk/HearYouOut",
+      cwd: "/var/www/snugtalk/frontend",
       script: "npm",
       args: "start",
       env: { NODE_ENV: "production", PORT: "3000" },
@@ -244,7 +244,7 @@ After that, every other role change can be done from `/admin/users`.
 cd /var/www/snugtalk
 git pull
 cd backend && npm ci && npx prisma generate && npm run db:deploy && npm run build
-cd ../HearYouOut && npm ci && npm run build
+cd ../frontend && npm ci && npm run build
 pm2 restart all
 ```
 

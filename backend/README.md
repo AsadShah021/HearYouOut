@@ -12,7 +12,7 @@ Three things, in three terminals (PowerShell has no `&&` — one command per lin
 ```powershell
 docker start hearmeout-mysql     # 1. database
 cd backend; npm run dev          # 2. API   → http://localhost:4000
-cd HearYouOut; npm run dev       # 3. web   → http://localhost:3000
+cd frontend; npm run dev       # 3. web   → http://localhost:3000
 ```
 
 ### Seeded accounts
@@ -69,11 +69,11 @@ Already done on this machine — kept for reference and for the next person.
 
 ## 0. Fix the frontend first
 
-The restructure moved the app into `HearYouOut/` but left its dependencies
+The restructure moved the app into `frontend/` but left its dependencies
 behind, so it won't start right now:
 
 ```powershell
-cd HearYouOut
+cd frontend
 npm install
 ```
 
@@ -284,7 +284,7 @@ Rules worth setting from the start:
 
 ## 7. Point the frontend at it
 
-In `HearYouOut/.env.local`:
+In `frontend/.env.local`:
 
 ```
 NEXT_PUBLIC_API_URL=http://localhost:4000

@@ -26,7 +26,7 @@ npm run build
 
 echo
 echo "==> Frontend: install, build"
-cd ../HearYouOut
+cd ../frontend
 npm ci
 npm run build
 
