@@ -97,6 +97,7 @@ export const api = {
     request<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined }),
   patch: <T>(path: string, body: unknown) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
+  del: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 };
 
 /* ------------------------------- API shapes ------------------------------- */
@@ -198,6 +199,12 @@ export interface AdminUserDetail extends AdminUserRow {
     lastMessageAt: string;
     _count: { messages: number };
   }[];
+}
+
+/** What `/api/auth/me` returns while an admin is impersonating. */
+export interface MeResponse {
+  user: ApiUser;
+  impersonatedBy: string | null;
 }
 
 export interface Pagination {

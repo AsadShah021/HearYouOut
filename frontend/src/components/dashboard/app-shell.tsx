@@ -8,6 +8,7 @@ import {
   AppSidebar,
   type SidebarSection,
 } from "@/components/dashboard/app-sidebar";
+import { ImpersonationBanner } from "@/components/dashboard/impersonation-banner";
 import { ThemeToggle } from "@/components/brand/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,11 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
-    <div className="bg-muted/30 min-h-dvh lg:grid lg:grid-cols-[16.5rem_1fr]">
+    <>
+      {/* Outside the grid — a banner shouldn't become a grid column. */}
+      <ImpersonationBanner />
+
+      <div className="bg-muted/30 min-h-dvh lg:grid lg:grid-cols-[16.5rem_1fr]">
       {/* Desktop sidebar */}
       <aside className="bg-sidebar border-sidebar-border sticky top-0 hidden h-dvh border-r lg:block">
         <AppSidebar sections={sections} user={user} footer={sidebarFooter} />
@@ -91,7 +96,8 @@ export function AppShell({
           {children}
         </main>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

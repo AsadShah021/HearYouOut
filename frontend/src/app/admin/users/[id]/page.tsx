@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CalendarCheck,
   Loader2,
   Mail,
+  Save,
+  Trash2,
   MessagesSquare,
   ShieldCheck,
 } from "lucide-react";
@@ -16,7 +18,10 @@ import { toast } from "sonner";
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
 import { PageHeader } from "@/components/dashboard/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   api,
@@ -39,10 +44,31 @@ const statusTone: Record<RequestStatus, "info" | "warning" | "success" | "muted"
 
 export default function AdminUserDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { user: me } = useAuth();
   const [user, setUser] = React.useState<AdminUserDetail | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+
+  async function saveDetails(name: string, email: string) {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const { user: updated } = await api.patch<{ user: AdminUserDetail }>(
+        `/api/admin/users/${user.id}`,
+        { name, email },
+      );
+      setUser((current) =>
+        current ? { ...current, name: updated.name, email: updated.email } : current,
+      );
+      toast.success("Details updated");
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Couldn't save that.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   React.useEffect(() => {
     let cancelled = false;
@@ -229,6 +255,31 @@ export default function AdminUserDetailPage() {
                 </div>
               </div>
 
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const form = new FormData(event.currentTarget);
+                  void saveDetails(
+                    String(form.get("name") ?? "").trim(),
+                    String(form.get("email") ?? "").trim(),
+                  );
+                }}
+                className="border-border/60 flex flex-col gap-3 border-t pt-4"
+              >
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="edit-name" className="text-xs">Name</Label>
+                  <Input id="edit-name" name="name" defaultValue={user.name} required />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="edit-email" className="text-xs">Email</Label>
+                  <Input id="edit-email" name="email" type="email" defaultValue={user.email} required />
+                </div>
+                <Button type="submit" size="sm" variant="outline" disabled={saving}>
+                  {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+                  Save changes
+                </Button>
+              </form>
+
               <dl className="text-muted-foreground border-border/60 flex flex-col gap-2 border-t pt-4 text-xs">
                 <div className="flex justify-between gap-3">
                   <dt>Joined</dt>
@@ -294,6 +345,60 @@ export default function AdminUserDetailPage() {
               </p>
             </CardContent>
           </Card>
+
+          {!isSelf && (
+            <Card className="border-destructive/25">
+              <CardHeader>
+                <CardTitle className="text-destructive flex items-center gap-2">
+                  <Trash2 className="size-4" />
+                  Danger zone
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  Deleting this account also deletes every conversation and
+                  message in it, permanently.
+                </p>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="w-fit"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="size-3.5" /> Delete account
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          <ConfirmDialog
+            open={confirmDelete}
+            onOpenChange={setConfirmDelete}
+            title={`Delete ${user.name}?`}
+            description="This cannot be undone."
+            destructive
+            detail={
+              <>
+                Their account, every conversation and all{" "}
+                <strong>{user._count.messages}</strong> of their messages are
+                deleted permanently.
+              </>
+            }
+            confirmText={user.email}
+            confirmLabel="Delete permanently"
+            onConfirm={async () => {
+              try {
+                await api.del(`/api/admin/users/${user.id}`);
+                toast.success(`${user.name} deleted`);
+                router.push("/admin/users");
+              } catch (error) {
+                toast.error(
+                  error instanceof ApiError ? error.message : "Couldn't delete that user.",
+                );
+                throw error;
+              }
+            }}
+          />
         </div>
       </div>
     </>

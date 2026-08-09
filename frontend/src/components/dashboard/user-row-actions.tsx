@@ -1,0 +1,143 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { api, ApiError, type AdminUserRow } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+
+/**
+ * Per-user actions for the admin table.
+ *
+ * Delete and impersonate both go through a confirmation — one destroys data
+ * irreversibly, the other opens somebody's private conversations.
+ */
+export function UserRowActions({
+  user,
+  onDeleted,
+}: {
+  user: AdminUserRow;
+  onDeleted: (id: string) => void;
+}) {
+  const { user: me, refresh } = useAuth();
+  const router = useRouter();
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+  const [confirmImpersonate, setConfirmImpersonate] = React.useState(false);
+
+  const isSelf = me?.id === user.id;
+  const isAdmin = user.role === "ADMIN";
+
+  async function impersonate() {
+    try {
+      await api.post(`/api/admin/users/${user.id}/impersonate`);
+      await refresh();
+      toast.success(`Now viewing as ${user.name}`);
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof ApiError ? error.message : "Couldn't start impersonating.",
+      );
+    }
+  }
+
+  async function remove() {
+    try {
+      await api.del(`/api/admin/users/${user.id}`);
+      onDeleted(user.id);
+      toast.success(`${user.name} deleted`);
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Couldn't delete that user.");
+      throw error; // keeps the dialog open so they can see what happened
+    }
+  }
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${user.name}`}>
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem asChild>
+            <Link href={`/admin/users/${user.id}`}>
+              <Pencil className="size-3.5" /> Edit
+            </Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            disabled={isSelf || isAdmin}
+            onSelect={(event) => {
+              event.preventDefault();
+              setConfirmImpersonate(true);
+            }}
+          >
+            <Eye className="size-3.5" /> View as this user
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            variant="destructive"
+            disabled={isSelf}
+            onSelect={(event) => {
+              event.preventDefault();
+              setConfirmDelete(true);
+            }}
+          >
+            <Trash2 className="size-3.5" /> Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ConfirmDialog
+        open={confirmImpersonate}
+        onOpenChange={setConfirmImpersonate}
+        title={`View SnugTalk as ${user.name}?`}
+        description="You'll see exactly what they see, including their private conversations."
+        detail={
+          <>
+            This is a support tool, not a browsing tool. The action is logged, and
+            a banner will stay on screen until you switch back.
+          </>
+        }
+        confirmLabel="Start viewing as them"
+        onConfirm={impersonate}
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={`Delete ${user.name}?`}
+        description="This cannot be undone."
+        destructive
+        detail={
+          <>
+            Their account, every conversation and all{" "}
+            <strong>{user._count.messages}</strong> of their messages are deleted
+            permanently. Meeting requests stay in your queue history, but without a
+            linked account.
+          </>
+        }
+        confirmText={user.email}
+        confirmLabel="Delete permanently"
+        onConfirm={remove}
+      />
+    </>
+  );
+}

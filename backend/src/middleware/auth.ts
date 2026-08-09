@@ -7,7 +7,7 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user?: { id: string; role: Role };
+      user?: { id: string; role: Role; impersonatedBy?: string };
     }
   }
 }
@@ -25,7 +25,7 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
   const payload = verifyToken(token);
   if (!payload) throw ApiError.unauthorized("Session expired — please sign in again");
 
-  req.user = { id: payload.sub, role: payload.role };
+  req.user = { id: payload.sub, role: payload.role, impersonatedBy: payload.imp };
   next();
 }
 

@@ -15,6 +15,9 @@ export type SessionUser = ApiUser;
 
 interface AuthValue {
   user: SessionUser | null;
+  /** Admin id, set only while impersonating someone. */
+  impersonatedBy: string | null;
+  stopImpersonating: () => Promise<void>;
   /** False until the first `/me` check resolves, so UI can avoid flicker. */
   ready: boolean;
   signIn: (email: string, password: string) => Promise<SessionUser>;
@@ -27,12 +30,17 @@ const AuthContext = React.createContext<AuthValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<SessionUser | null>(null);
+  const [impersonatedBy, setImpersonatedBy] = React.useState<string | null>(null);
   const [ready, setReady] = React.useState(false);
 
   const refresh = React.useCallback(async () => {
     try {
-      const { user: me } = await api.get<{ user: SessionUser }>("/api/auth/me");
+      const { user: me, impersonatedBy: by } = await api.get<{
+        user: SessionUser;
+        impersonatedBy: string | null;
+      }>("/api/auth/me");
       setUser(me);
+      setImpersonatedBy(by ?? null);
     } catch (error) {
       // 401 just means signed out. Anything else (API down) also leaves us
       // signed out, but is worth surfacing in the console during development.
@@ -40,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn("[auth] could not load session:", error);
       }
       setUser(null);
+      setImpersonatedBy(null);
     } finally {
       setReady(true);
     }
@@ -77,12 +86,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       // Clear locally even if the call failed, so the UI can't get stuck.
       setUser(null);
+      setImpersonatedBy(null);
     }
   }, []);
 
+  /** Hand the session back to the admin who started impersonating. */
+  const stopImpersonating = React.useCallback(async () => {
+    const { user: admin } = await api.post<{ user: SessionUser }>(
+      "/api/auth/stop-impersonating",
+    );
+    setUser(admin);
+    setImpersonatedBy(null);
+  }, []);
+
   const value = React.useMemo<AuthValue>(
-    () => ({ user, ready, signIn, signUp, signOut, refresh }),
-    [user, ready, signIn, signUp, signOut, refresh],
+    () => ({ user, impersonatedBy, ready, signIn, signUp, signOut, refresh, stopImpersonating }),
+    [user, impersonatedBy, ready, signIn, signUp, signOut, refresh, stopImpersonating],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

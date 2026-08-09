@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
 import { PageHeader } from "@/components/dashboard/app-shell";
+import { UserRowActions } from "@/components/dashboard/user-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -135,6 +136,7 @@ export default function AdminUsersPage() {
                   <th className="px-5 py-3 font-medium">Tickets</th>
                   <th className="px-5 py-3 font-medium">Messages</th>
                   <th className="px-5 py-3 font-medium">Joined</th>
+                  <th className="w-12 px-5 py-3" />
                 </tr>
               </thead>
               <tbody>
@@ -171,6 +173,14 @@ export default function AdminUsersPage() {
                         month: "short",
                         day: "numeric",
                       })}
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <UserRowActions
+                        user={user}
+                        onDeleted={(id) =>
+                          setUsers((current) => current.filter((u) => u.id !== id))
+                        }
+                      />
                     </td>
                   </tr>
                 ))}

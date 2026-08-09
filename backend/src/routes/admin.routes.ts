@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { ApiError } from "../lib/errors.js";
 import { prisma } from "../lib/prisma.js";
+import { setSessionCookie, signToken } from "../lib/auth.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 export const adminRoutes = Router();
@@ -180,31 +181,111 @@ adminRoutes.get("/users/:id", async (req, res) => {
   res.json({ user });
 });
 
-const updateUser = z.object({
-  role: z.enum(["MEMBER", "LISTENER", "ADMIN"]),
-});
+const updateUser = z
+  .object({
+    name: z.string().trim().min(1, "Name can't be empty").max(120).optional(),
+    email: z.string().trim().toLowerCase().email("Enter a valid email").max(191).optional(),
+    role: z.enum(["MEMBER", "LISTENER", "ADMIN"]).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: "Nothing to update" });
 
 adminRoutes.patch("/users/:id", async (req, res) => {
   const { id } = idParam.parse(req.params);
-  const { role } = updateUser.parse(req.body);
+  const { name, email, role } = updateUser.parse(req.body);
 
   const target = await prisma.user.findUnique({ where: { id } });
   if (!target) throw ApiError.notFound("No such user");
 
-  // Guard against locking yourself — and possibly everyone — out of the panel.
-  if (target.id === req.user!.id && role !== "ADMIN") {
-    throw ApiError.badRequest("You can't remove your own admin access");
+  if (role) {
+    // Guard against locking yourself — and possibly everyone — out of the panel.
+    if (target.id === req.user!.id && role !== "ADMIN") {
+      throw ApiError.badRequest("You can't remove your own admin access");
+    }
+    if (target.role === "ADMIN" && role !== "ADMIN") {
+      const admins = await prisma.user.count({ where: { role: "ADMIN" } });
+      if (admins <= 1) throw ApiError.badRequest("There must always be at least one admin");
+    }
   }
-  if (target.role === "ADMIN" && role !== "ADMIN") {
-    const admins = await prisma.user.count({ where: { role: "ADMIN" } });
-    if (admins <= 1) throw ApiError.badRequest("There must always be at least one admin");
+
+  if (email && email !== target.email) {
+    const clash = await prisma.user.findUnique({ where: { email } });
+    if (clash) throw ApiError.conflict("Another account already uses that email");
   }
 
   const user = await prisma.user.update({
     where: { id },
-    data: { role },
+    data: { ...(name ? { name } : {}), ...(email ? { email } : {}), ...(role ? { role } : {}) },
     select: publicUser,
   });
 
   res.json({ user });
+});
+
+/**
+ * Permanently delete an account.
+ *
+ * This cascades: the person's conversations and every message in them go with
+ * it, irreversibly. Meeting requests survive with a null user, so the team's
+ * queue history stays intact.
+ */
+adminRoutes.delete("/users/:id", async (req, res) => {
+  const { id } = idParam.parse(req.params);
+
+  const target = await prisma.user.findUnique({
+    where: { id },
+    select: { id: true, email: true, role: true },
+  });
+  if (!target) throw ApiError.notFound("No such user");
+
+  if (target.id === req.user!.id) {
+    throw ApiError.badRequest("You can't delete your own account from here");
+  }
+  if (target.role === "ADMIN") {
+    const admins = await prisma.user.count({ where: { role: "ADMIN" } });
+    if (admins <= 1) throw ApiError.badRequest("There must always be at least one admin");
+  }
+
+  await prisma.user.delete({ where: { id } });
+
+  // Until there's a proper audit table, the process log is the record.
+  console.warn(
+    `[admin] ${req.user!.id} deleted user ${target.id} (${target.email}) at ${new Date().toISOString()}`,
+  );
+
+  res.status(204).end();
+});
+
+/**
+ * Sign in as another user, to see exactly what they see.
+ *
+ * Deliberately constrained: admins only, never another admin, and the issued
+ * token records who is behind it so the UI can show a banner and hand the
+ * session back afterwards.
+ *
+ * Worth being clear-eyed about: this grants read access to somebody's private
+ * conversations. It exists for support, and it should be used sparingly.
+ */
+adminRoutes.post("/users/:id/impersonate", async (req, res) => {
+  const { id } = idParam.parse(req.params);
+
+  if (req.user!.impersonatedBy) {
+    throw ApiError.badRequest("Stop the current impersonation first");
+  }
+  if (id === req.user!.id) throw ApiError.badRequest("You're already yourself");
+
+  const target = await prisma.user.findUnique({ where: { id }, select: publicUser });
+  if (!target) throw ApiError.notFound("No such user");
+  if (target.role === "ADMIN") {
+    throw ApiError.forbidden("Admins can't impersonate other admins");
+  }
+
+  console.warn(
+    `[admin] ${req.user!.id} started impersonating ${target.id} (${target.email}) at ${new Date().toISOString()}`,
+  );
+
+  setSessionCookie(
+    res,
+    signToken({ sub: target.id, role: target.role, imp: req.user!.id }),
+  );
+  res.json({ user: target });
 });

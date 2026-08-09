@@ -90,5 +90,25 @@ authRoutes.get("/me", requireAuth, async (req, res) => {
     throw ApiError.unauthorized();
   }
 
-  res.json({ user });
+  res.json({
+    user,
+    // Present only while an admin is impersonating: lets the UI show a banner.
+    impersonatedBy: req.user!.impersonatedBy ?? null,
+  });
+});
+
+/** End an impersonation session and restore the admin's own. */
+authRoutes.post("/stop-impersonating", requireAuth, async (req, res) => {
+  const adminId = req.user!.impersonatedBy;
+  if (!adminId) throw ApiError.badRequest("You aren't impersonating anyone");
+
+  const admin = await prisma.user.findUnique({ where: { id: adminId }, select: publicUser });
+  if (!admin) {
+    // The admin account vanished mid-session; safest outcome is signed out.
+    clearSessionCookie(res);
+    throw ApiError.unauthorized();
+  }
+
+  setSessionCookie(res, signToken({ sub: admin.id, role: admin.role }));
+  res.json({ user: admin });
 });

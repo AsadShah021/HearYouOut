@@ -8,6 +8,7 @@ import type { LucideIcon } from "lucide-react";
 import { ArrowUpRight, LogOut, Settings2 } from "lucide-react";
 
 import { ListenerAvatar } from "@/components/brand/listener-avatar";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ export function AppSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
+  const [confirmSignOut, setConfirmSignOut] = React.useState(false);
 
   const isActive = (item: SidebarItem) =>
     item.exact ? pathname === item.href : pathname.startsWith(item.href);
@@ -117,15 +119,24 @@ export function AppSidebar({
           size="icon-sm"
           variant="ghost"
           aria-label="Sign out"
-          onClick={() => {
-            signOut();
-            router.push("/");
-            router.refresh();
-          }}
+          onClick={() => setConfirmSignOut(true)}
         >
           <LogOut />
         </Button>
       </div>
+
+      <ConfirmDialog
+        open={confirmSignOut}
+        onOpenChange={setConfirmSignOut}
+        title="Sign out?"
+        description="You'll need to sign in again to reach your messages and meetings."
+        confirmLabel="Sign out"
+        onConfirm={async () => {
+          await signOut();
+          router.push("/");
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

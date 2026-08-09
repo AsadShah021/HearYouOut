@@ -13,6 +13,14 @@ export interface TokenPayload {
   /** User id. `sub` is the registered JWT claim for the subject. */
   sub: string;
   role: Role;
+  /**
+   * Set only while an admin is impersonating someone: the admin's own id.
+   *
+   * Carrying it in the token is what lets "stop impersonating" restore the
+   * original session without a second cookie, and lets the UI show a banner so
+   * nobody forgets whose account they are looking at.
+   */
+  imp?: string;
 }
 
 /** Cost 12: ~250ms per hash, slow enough to make offline cracking expensive. */
