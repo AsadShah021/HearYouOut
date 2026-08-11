@@ -21,9 +21,14 @@ const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const USERINFO_ENDPOINT = "https://www.googleapis.com/oauth2/v3/userinfo";
 
-/** Must match a redirect URI registered in the Google Cloud console exactly. */
+/**
+ * Must match a redirect URI registered in the Google Cloud console exactly.
+ *
+ * Built from `apiUrl`, not `appUrl`: Google returns the browser to *this
+ * server*, which in local development is a different port from the app.
+ */
 function redirectUri() {
-  return `${env.appUrl}/api/auth/google/callback`;
+  return `${env.apiUrl}/api/auth/google/callback`;
 }
 
 /** Send the browser back to the app with a message the sign-in page can show. */

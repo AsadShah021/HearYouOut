@@ -8,6 +8,31 @@ import { prisma } from "../src/lib/prisma.js";
  */
 const PASSWORD = "password123";
 
+/**
+ * Refuse to run against a database that already has real accounts.
+ *
+ * Local development now points at the live database over an SSH tunnel, which
+ * means one absent-minded `npm run db:seed` would create an admin with the
+ * password above on the production site. Counting users is a crude check, but
+ * it costs one query and it is the difference between a typo and a breach.
+ *
+ * Override deliberately with: ALLOW_SEED=yes npm run db:seed
+ */
+async function refuseIfPopulated() {
+  if (process.env.ALLOW_SEED === "yes") return;
+
+  const existing = await prisma.user.count();
+  if (existing === 0) return;
+
+  console.error(
+    `\n✖ Refusing to seed: this database already has ${existing} user(s).\n` +
+      `  If this is production you almost certainly do not want to add an\n` +
+      `  account with the password "${PASSWORD}".\n\n` +
+      `  If you are certain, re-run with:  ALLOW_SEED=yes npm run db:seed\n`,
+  );
+  process.exit(1);
+}
+
 const team = [
   {
     email: "amara@snugtalk.test",
@@ -32,6 +57,8 @@ const team = [
 ];
 
 async function main() {
+  await refuseIfPopulated();
+
   const passwordHash = await hashPassword(PASSWORD);
 
   const admin = await prisma.user.upsert({

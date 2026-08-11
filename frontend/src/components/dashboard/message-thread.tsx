@@ -64,9 +64,9 @@ export function MessageThread() {
   }
 
   return (
-    <div className="border-border/70 bg-card grid h-[calc(100dvh-9.5rem)] overflow-hidden rounded-2xl border md:grid-cols-[18rem_1fr]">
+    <div className="border-border/70 bg-card grid min-h-0 flex-1 overflow-hidden rounded-2xl border md:grid-cols-[18rem_1fr]">
       {/* Conversation list */}
-      <div className="border-border/70 hidden flex-col overflow-y-auto border-r md:flex">
+      <div className="border-border/70 hidden min-h-0 flex-col overflow-y-auto border-r md:flex">
         {conversations.map((conversation) => {
           const person = getListener(conversation.listenerId);
           const selected = conversation.id === activeId;
@@ -100,7 +100,7 @@ export function MessageThread() {
       </div>
 
       {/* Thread */}
-      <div className="flex min-w-0 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-col">
         <header className="border-border/70 flex items-center gap-3 border-b px-5 py-3.5">
           <ListenerAvatar name={listener?.name ?? "Listener"} src={listener?.avatar} size="sm" online />
           <div className="min-w-0 flex-1">
@@ -127,7 +127,7 @@ export function MessageThread() {
           </Button>
         </header>
 
-        <div className="flex-1 space-y-3 overflow-y-auto p-5">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
           {messages.map((message) => (
             <motion.div
               key={message.id}

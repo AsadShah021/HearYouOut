@@ -152,3 +152,51 @@ conversationRoutes.post("/:id/messages", async (req, res) => {
 
   res.status(201).json({ message });
 });
+
+/* ------------------------------ Unread state ------------------------------ */
+
+/**
+ * How many messages the caller hasn't seen, in their own thread.
+ *
+ * Deliberately its own endpoint rather than a field on `/mine`: the widget
+ * polls this while closed, and `/mine` carries up to 200 messages.
+ */
+conversationRoutes.get("/unread-count", async (req, res) => {
+  const conversation = await prisma.conversation.findFirst({
+    where: { memberId: req.user!.id },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+
+  if (!conversation) return res.json({ count: 0 });
+
+  const count = await prisma.message.count({
+    where: {
+      conversationId: conversation.id,
+      readAt: null,
+      // Your own messages are never unread to you.
+      senderId: { not: req.user!.id },
+    },
+  });
+
+  res.json({ count });
+});
+
+/** Marks everything the caller didn't write as read. Idempotent. */
+conversationRoutes.post("/:id/read", async (req, res) => {
+  const { id } = idParam.parse(req.params);
+
+  const conversation = await prisma.conversation.findUnique({
+    where: { id },
+    select: { id: true, memberId: true },
+  });
+  if (!conversation) throw ApiError.notFound("Conversation not found");
+  if (!canAccess(conversation, req.user!)) throw ApiError.forbidden();
+
+  await prisma.message.updateMany({
+    where: { conversationId: id, readAt: null, senderId: { not: req.user!.id } },
+    data: { readAt: new Date() },
+  });
+
+  res.status(204).end();
+});

@@ -26,6 +26,16 @@ const schema = z.object({
   APP_URL: z.string().url().optional(),
 
   /**
+   * Public origin of this API, used only to build the OAuth redirect URI.
+   *
+   * In production nginx serves the app and the API on one origin, so this is
+   * the same as APP_URL and can be left unset. In local development they are
+   * different ports (app :3000, API :4000) and Google must be sent back to the
+   * API, not the app — so set it explicitly there.
+   */
+  API_URL: z.string().url().optional(),
+
+  /**
    * Google sign-in. Optional — leave unset and the Google routes return a clear
    * "not configured" error rather than the server refusing to boot.
    */
@@ -63,6 +73,7 @@ export const env = {
   isProduction: parsed.data.NODE_ENV === "production",
   corsOrigins,
   appUrl: (parsed.data.APP_URL ?? corsOrigins[0]!).replace(/\/$/, ""),
+  apiUrl: (parsed.data.API_URL ?? parsed.data.APP_URL ?? corsOrigins[0]!).replace(/\/$/, ""),
   googleConfigured: Boolean(
     parsed.data.GOOGLE_CLIENT_ID && parsed.data.GOOGLE_CLIENT_SECRET,
   ),

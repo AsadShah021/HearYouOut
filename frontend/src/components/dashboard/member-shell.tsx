@@ -9,6 +9,7 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 
+import { ChatWidget } from "@/components/chat/chat-widget";
 import { AppShell } from "@/components/dashboard/app-shell";
 import { isStaff, useAuth } from "@/lib/auth";
 
@@ -63,6 +64,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
       primaryAction={{ label: "Schedule a meeting", href: "/book" }}
     >
       {children}
+      <ChatWidget />
     </AppShell>
   );
 }

@@ -34,21 +34,31 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
-    <>
+    /*
+     * The shell owns the viewport height and scrolls internally, rather than
+     * letting the window scroll.
+     *
+     * That's what lets a full-height panel (the chat inbox) say `flex-1` and
+     * actually get the space that's left. The previous approach subtracted a
+     * hardcoded `9.5rem` for the chrome, which under-counted the topbar, the
+     * main padding and the page header — so the reply box ended up below the
+     * fold with nothing able to scroll to it.
+     */
+    <div className="flex h-dvh flex-col overflow-hidden">
       {/* Outside the grid — a banner shouldn't become a grid column. */}
       <ImpersonationBanner />
 
-      <div className="bg-muted/30 min-h-dvh lg:grid lg:grid-cols-[16.5rem_1fr]">
+      <div className="bg-muted/30 flex min-h-0 flex-1 lg:grid lg:grid-cols-[16.5rem_1fr]">
       {/* Desktop sidebar */}
-      <aside className="bg-sidebar border-sidebar-border sticky top-0 hidden h-dvh border-r lg:block">
+      <aside className="bg-sidebar border-sidebar-border hidden h-full overflow-y-auto border-r lg:block">
         <AppSidebar sections={sections} user={user} footer={sidebarFooter} />
       </aside>
 
-      <div className="flex min-h-dvh min-w-0 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {/* Top bar */}
         {/* Opaque, not `.glass`. Dashboard content scrolls directly beneath this
             bar, and a translucent one lets headings bleed through it. */}
-        <header className="bg-background border-border/70 sticky top-0 z-40 flex h-16 items-center gap-3 border-b px-4 sm:px-6 lg:px-8">
+        <header className="bg-background border-border/70 z-40 flex h-16 shrink-0 items-center gap-3 border-b px-4 sm:px-6 lg:px-8">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
@@ -92,12 +102,15 @@ export function AppShell({
           </div>
         </header>
 
-        <main id="main" className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <main
+          id="main"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
+        >
           {children}
         </main>
       </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -118,7 +131,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
+        "mb-7 flex shrink-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
         className,
       )}
     >

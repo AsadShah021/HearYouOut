@@ -22,13 +22,6 @@ const statusTone = {
   CLOSED: "muted",
 } as const;
 
-/** Ready-made openers — the point is speed, not putting words in anyone's mouth. */
-const quickReplies = [
-  "There's a real person here — I'm reading now.",
-  "Anything at all is welcome. It doesn't have to be about work.",
-  "Take your time. I'm not going anywhere.",
-];
-
 type Scope = "mine" | "unassigned" | "all";
 
 export function TeamChatInbox() {
@@ -158,9 +151,9 @@ export function TeamChatInbox() {
   }
 
   return (
-    <div className="border-border/70 bg-card grid h-[calc(100dvh-9.5rem)] overflow-hidden rounded-2xl border md:grid-cols-[20rem_1fr]">
+    <div className="border-border/70 bg-card grid min-h-0 flex-1 overflow-hidden rounded-2xl border md:grid-cols-[20rem_1fr]">
       {/* Queue */}
-      <div className="border-border/70 hidden flex-col border-r md:flex">
+      <div className="border-border/70 hidden min-h-0 flex-col border-r md:flex">
         <div className="border-border/70 flex flex-col gap-2.5 border-b px-4 py-3.5">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-semibold">Inbox</p>
@@ -190,7 +183,7 @@ export function TeamChatInbox() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           {visible.length === 0 && (
             <p className="text-muted-foreground p-6 text-center text-xs leading-relaxed">
               {scope === "mine"
@@ -243,7 +236,7 @@ export function TeamChatInbox() {
       </div>
 
       {/* Thread */}
-      <div className="flex min-w-0 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-col">
         <header className="border-border/70 flex flex-wrap items-center gap-3 border-b px-5 py-3.5">
           <ListenerAvatar name={active?.member.name ?? "—"} size="sm" online />
           <div className="min-w-0 flex-1">
@@ -264,7 +257,7 @@ export function TeamChatInbox() {
           )}
         </header>
 
-        <div className="flex-1 space-y-3 overflow-y-auto p-5">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
           {messages.map((message) => {
             const fromUs = message.sender.role !== "MEMBER";
             return (
@@ -297,20 +290,6 @@ export function TeamChatInbox() {
         </div>
 
         <div className="border-border/70 border-t p-4">
-          <div className="mb-2.5 flex flex-wrap gap-1.5">
-            {quickReplies.map((reply) => (
-              <button
-                key={reply}
-                type="button"
-                disabled={sending}
-                onClick={() => void send(reply)}
-                className="border-border/70 text-muted-foreground hover:text-foreground hover:border-primary/40 rounded-full border px-3 py-1.5 text-xs transition-colors disabled:opacity-50"
-              >
-                {reply}
-              </button>
-            ))}
-          </div>
-
           <div className="border-input bg-background/60 focus-within:border-ring focus-within:ring-ring/30 flex items-end gap-2 rounded-2xl border p-2 transition-[box-shadow,border-color] focus-within:ring-[3px]">
             <Textarea
               value={draft}
